@@ -419,8 +419,8 @@
 			"meta": {}
 		},
 		{
-			"x": -2478.5635878005487,
-			"y": 576.365347588654,
+			"x": -2152.16301407008,
+			"y": -54.034737860564746,
 			"z": 0.5,
 			"meta": {},
 			"id": "camera:page:page",
@@ -1126,12 +1126,12 @@
 			"typeName": "shape"
 		},
 		{
-			"editingShapeId": "shape:4AC_FhbRjXt1YElFEwwZe",
+			"editingShapeId": "shape:RVHPZcH-N1RrFIYVnPRxl",
 			"croppingShapeId": null,
 			"selectedShapeIds": [
-				"shape:4AC_FhbRjXt1YElFEwwZe"
+				"shape:RVHPZcH-N1RrFIYVnPRxl"
 			],
-			"hoveredShapeId": "shape:4AC_FhbRjXt1YElFEwwZe",
+			"hoveredShapeId": "shape:RVHPZcH-N1RrFIYVnPRxl",
 			"erasingShapeIds": [],
 			"hintingShapeIds": [],
 			"focusedGroupId": null,
@@ -1141,8 +1141,8 @@
 			"typeName": "instance_page_state"
 		},
 		{
-			"x": 3537.7635389724237,
-			"y": 406.0346768254085,
+			"x": 3524.9637342849237,
+			"y": 300.43464020431475,
 			"rotation": 0,
 			"isLocked": false,
 			"opacity": 1,
@@ -1325,8 +1325,8 @@
 					"y": -88.79998779296875
 				},
 				"end": {
-					"x": 24,
-					"y": 207.99993896484375
+					"x": 28.80029296875,
+					"y": 97.59991455078125
 				},
 				"arrowheadStart": "none",
 				"arrowheadEnd": "arrow",
@@ -1344,6 +1344,50 @@
 			},
 			"parentId": "page:page",
 			"index": "arfgpD2V",
+			"typeName": "shape"
+		},
+		{
+			"x": 3761.7629896560175,
+			"y": 478.03473786056475,
+			"rotation": 0,
+			"isLocked": false,
+			"opacity": 1,
+			"meta": {},
+			"id": "shape:i41HX5vkCkVqwt6AKFe5O",
+			"type": "arrow",
+			"props": {
+				"kind": "arc",
+				"elbowMidPoint": 0.5,
+				"dash": "draw",
+				"size": "m",
+				"fill": "none",
+				"color": "black",
+				"labelColor": "black",
+				"bend": 0,
+				"start": {
+					"x": 0,
+					"y": 0
+				},
+				"end": {
+					"x": -1.599853515625,
+					"y": 168.00006103515625
+				},
+				"arrowheadStart": "none",
+				"arrowheadEnd": "arrow",
+				"richText": {
+					"type": "doc",
+					"content": [
+						{
+							"type": "paragraph"
+						}
+					]
+				},
+				"labelPosition": 0.5,
+				"font": "draw",
+				"scale": 1
+			},
+			"parentId": "page:page",
+			"index": "atnqjABV",
 			"typeName": "shape"
 		},
 		{
@@ -1396,6 +1440,24 @@
 			"typeName": "shape"
 		},
 		{
+			"meta": {},
+			"id": "binding:pnvIYRw-J3-I9aRbzFFOT",
+			"type": "arrow",
+			"fromId": "shape:i41HX5vkCkVqwt6AKFe5O",
+			"toId": "shape:4AC_FhbRjXt1YElFEwwZe",
+			"props": {
+				"isPrecise": true,
+				"isExact": false,
+				"normalizedAnchor": {
+					"x": 0.4198568357643506,
+					"y": 0.9839340590373962
+				},
+				"snap": "none",
+				"terminal": "start"
+			},
+			"typeName": "binding"
+		},
+		{
 			"x": 2357.39990234375,
 			"y": 161.89012234414622,
 			"rotation": 0,
@@ -1442,6 +1504,80 @@
 			},
 			"parentId": "page:page",
 			"index": "afmDr2Ul",
+			"typeName": "shape"
+		},
+		{
+			"x": 3521.76311172633,
+			"y": 650.8347866886897,
+			"rotation": 0,
+			"isLocked": false,
+			"opacity": 1,
+			"meta": {},
+			"id": "shape:RVHPZcH-N1RrFIYVnPRxl",
+			"type": "geo",
+			"props": {
+				"w": 519,
+				"h": 180.800048828125,
+				"geo": "rectangle",
+				"dash": "draw",
+				"growY": 0,
+				"url": "",
+				"scale": 1,
+				"color": "black",
+				"labelColor": "black",
+				"fill": "none",
+				"size": "m",
+				"font": "draw",
+				"align": "middle",
+				"verticalAlign": "middle",
+				"richText": {
+					"type": "doc",
+					"attrs": {
+						"dir": "auto"
+					},
+					"content": [
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "train model on xgboost(scale_pos_weight, eval_metric='loglos',rs=42) print (accuracy,confusion m,classifcation report)"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "scale_pos_weight = (y_train "
+								},
+								{
+									"type": "text",
+									"marks": [
+										{
+											"type": "highlight"
+										}
+									],
+									"text": " 0).sum() / (y_train "
+								},
+								{
+									"type": "text",
+									"text": " 1).sum()"
+								}
+							]
+						}
+					]
+				}
+			},
+			"parentId": "page:page",
+			"index": "auJtMXmV",
 			"typeName": "shape"
 		},
 		{

@@ -489,6 +489,67 @@
 			"typeName": "shape"
 		},
 		{
+			"x": 2575.2521196238977,
+			"y": -222.90940037142627,
+			"rotation": 0,
+			"isLocked": false,
+			"opacity": 1,
+			"meta": {},
+			"id": "shape:A4AKEqfsCaHvSujwSZn07",
+			"type": "geo",
+			"props": {
+				"w": 529.6000366210938,
+				"h": 166.39996337890625,
+				"geo": "rectangle",
+				"dash": "draw",
+				"growY": 0,
+				"url": "",
+				"scale": 1,
+				"color": "black",
+				"labelColor": "black",
+				"fill": "none",
+				"size": "m",
+				"font": "draw",
+				"align": "middle",
+				"verticalAlign": "middle",
+				"richText": {
+					"type": "doc",
+					"attrs": {
+						"dir": "auto"
+					},
+					"content": [
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "draw counplot in enumerate hue='churn'"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "data=df "
+								}
+							]
+						}
+					]
+				}
+			},
+			"parentId": "page:page",
+			"index": "aiZBVLNV",
+			"typeName": "shape"
+		},
+		{
 			"x": -329.19993591308594,
 			"y": 32.39997863769531,
 			"rotation": 0,
@@ -602,9 +663,9 @@
 			"typeName": "shape"
 		},
 		{
-			"x": 4098.132346044799,
-			"y": 2305.7678008265875,
-			"z": 0.13431781441268992,
+			"x": -373.6520830028039,
+			"y": 1192.5094980276763,
+			"z": 0.25,
 			"meta": {},
 			"id": "camera:page:page",
 			"typeName": "camera"
@@ -942,12 +1003,61 @@
 			"typeName": "binding"
 		},
 		{
+			"x": 4837.652083002804,
+			"y": 519.4906240426362,
+			"rotation": 0,
+			"isLocked": false,
+			"opacity": 1,
+			"meta": {},
+			"id": "shape:c3_bRjslLzMUBX15_sQnh",
+			"type": "geo",
+			"props": {
+				"w": 313.599609375,
+				"h": 118.400146484375,
+				"geo": "rectangle",
+				"dash": "draw",
+				"growY": 0,
+				"url": "",
+				"scale": 1,
+				"color": "black",
+				"labelColor": "black",
+				"fill": "none",
+				"size": "m",
+				"font": "draw",
+				"align": "middle",
+				"verticalAlign": "middle",
+				"richText": {
+					"type": "doc",
+					"attrs": {
+						"dir": "auto"
+					},
+					"content": [
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "convert to csv "
+								}
+							]
+						}
+					]
+				}
+			},
+			"parentId": "page:page",
+			"index": "akWmGOCV",
+			"typeName": "shape"
+		},
+		{
 			"editingShapeId": null,
 			"croppingShapeId": null,
 			"selectedShapeIds": [
-				"shape:FgjYzXjv2FgYDhrRWS3iE"
+				"shape:c3_bRjslLzMUBX15_sQnh"
 			],
-			"hoveredShapeId": null,
+			"hoveredShapeId": "shape:c3_bRjslLzMUBX15_sQnh",
 			"erasingShapeIds": [],
 			"hintingShapeIds": [],
 			"focusedGroupId": null,
@@ -1245,6 +1355,115 @@
 			},
 			"parentId": "page:page",
 			"index": "aeTz4HyG",
+			"typeName": "shape"
+		},
+		{
+			"x": 2556.0521684520227,
+			"y": -3.7093881643950226,
+			"rotation": 0,
+			"isLocked": false,
+			"opacity": 1,
+			"meta": {},
+			"id": "shape:ToaaL-QtjIqfH9mzfHZor",
+			"type": "geo",
+			"props": {
+				"w": 652.7999877929688,
+				"h": 257.5999755859375,
+				"geo": "rectangle",
+				"dash": "draw",
+				"growY": 0,
+				"url": "",
+				"scale": 1,
+				"color": "black",
+				"labelColor": "black",
+				"fill": "none",
+				"size": "m",
+				"font": "draw",
+				"align": "middle",
+				"verticalAlign": "middle",
+				"richText": {
+					"type": "doc",
+					"attrs": {
+						"dir": "auto"
+					},
+					"content": [
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "value counts of senior cetizens,"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "split data churn=yes and no"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "df gender value count"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "all dfyes.colum value counts for "
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "senior setizen , gender"
+								}
+							]
+						},
+						{
+							"type": "paragraph",
+							"attrs": {
+								"dir": "auto"
+							},
+							"content": [
+								{
+									"type": "text",
+									"text": "pd.crosstab(paymentmethod , churn )"
+								}
+							]
+						}
+					]
+				}
+			},
+			"parentId": "page:page",
+			"index": "aj2ARYhV",
 			"typeName": "shape"
 		},
 		{
@@ -1874,11 +2093,13 @@
 		{
 			"followingUserId": null,
 			"opacityForNextShape": 1,
-			"stylesForNextShape": {},
+			"stylesForNextShape": {
+				"tldraw:geo": "rectangle"
+			},
 			"brush": null,
 			"scribbles": [],
 			"cursor": {
-				"type": "default",
+				"type": "nwse-resize",
 				"rotation": 0
 			},
 			"isFocusMode": false,
@@ -1888,8 +2109,8 @@
 			"screenBounds": {
 				"x": 0,
 				"y": 0,
-				"w": 1026.4000244140625,
-				"h": 654.4000244140625
+				"w": 1488,
+				"h": 702.4000244140625
 			},
 			"insets": [
 				false,
@@ -1906,7 +2127,7 @@
 			"isFocused": true,
 			"devicePixelRatio": 1.25,
 			"isCoarsePointer": false,
-			"isHoveringCanvas": false,
+			"isHoveringCanvas": true,
 			"openMenus": [],
 			"isChangingStyle": false,
 			"isReadonly": false,

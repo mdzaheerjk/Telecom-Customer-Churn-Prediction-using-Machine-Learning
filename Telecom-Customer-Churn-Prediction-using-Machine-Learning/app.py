@@ -25,6 +25,40 @@ def preprocessor_builder(df):
     scaler=StandardScaler()
     scaler.fit(x_template)
 
+    print(f"[DEBUG] Build Preprocessor: template rows{x_template.shape[0]},template colums {x_template.shape[1]}")
+
+    return {
+        'template_colums':list(x_template.columns),
+        'scaler':scaler,
+        'tenure_bins':(bins,labels),
+        'sample_df':telco
+    }
+
+
+def preprocessing(user_input,prep):
+    df_in=pd.DataFrame([user_input])
+    
+
+
+
+
+@st.cache_resource
+def load_model(path='./models/adaboost_weighted_model.pkl'):
+    print(f"[DEBUG]: Load Model From , loafing model from {path}")
+    model=joblib.load(path)
+    print(f"[DEBUG] Load Model : Model type is {type(model)}")
+    return model
+
+
 def main():
-    st.set_page_config(page_title='Churn Prediction',layout='centered')
+    st.set_page_config(page_title='Churn Prediction',layout='wide')
     st.title("Telecom Customer Churn Prediction ⚡")
+
+
+    st.markdown('#### Provide customer Details to Get Churn Prediction')
+
+
+
+
+if __name__=='__main__':
+    main()

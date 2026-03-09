@@ -21,4 +21,10 @@ def preprocessor_builder(df):
 
     x_template=telco.drop(columns=['customerID','tenure','Churn'])
     x_template=pd.get_dummies(x_template,drop_first=True)
-    
+
+    scaler=StandardScaler()
+    scaler.fit(x_template)
+
+def main():
+    st.set_page_config(page_title='Churn Prediction',layout='centered')
+    st.title("Telecom Customer Churn Prediction ⚡")

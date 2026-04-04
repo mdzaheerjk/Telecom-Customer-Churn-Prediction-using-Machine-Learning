@@ -45,7 +45,13 @@ def build_preprocessor(df):
 
 
 def main():
-    pass
+    st.set_page_config(page_title='Churn Prediction',layout='centered')
+    st.title("Telecom Customer Churn Prediction ⚡")
+
+    df=load_data()
+    prep=build_preprocessor(df)
+    model=load_model()
+
 
 
 

@@ -7,3 +7,5 @@ catboost
 lightgbm
 optuna
 imblearn
+tqdm
+xgboost

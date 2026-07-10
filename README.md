@@ -12,7 +12,7 @@ This project focuses on developing a machine learning system to predict customer
 ## System Architecture
 
 <p align="center">
-  <img src="https://backend.krishnaik.in/media/project_architecture_diagrams/Gemini_Generated_Image_4hi37h4hi37h4hi3.jpg"
+  <img src="https://career-platform-may-2026.s3.ap-south-1.amazonaws.com/krishnaik.in/media/project_architecture_diagrams/Gemini_Generated_Image_4hi37h4hi37h4hi3.jpg"
        alt="System Architecture"
        width="600" />
 </p>

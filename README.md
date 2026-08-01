@@ -4,7 +4,7 @@ This project focuses on developing a machine learning system to predict customer
 ## Project Preview
 
 <p align="center">
-  <img src="https://backend.krishnaik.in/media/project_banners/-gemini_generated_image_gwurc4gwurc4gwur-cab256ad19681fc06718f98c6974220_r8f1Qgp.jpg"
+  <img src="https://career-platform-may-2026.s3.ap-south-1.amazonaws.com/krishnaik.in/media/project_banners/-gemini_generated_image_gwurc4gwurc4gwur-cab256ad19681fc06718f98c6974220_r8f1Qgp.jpg"
        alt="Project Preview"
        width="600" />
 </p>

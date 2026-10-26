@@ -52,6 +52,10 @@ Telecom-Customer-Churn-Prediction-using-Machine-Learning/
 │   ├── EDA.ipynb                   # Exploratory Data Analysis & visualizations
 │   ├── MODEL.ipynb                 # Model experimentation, training & tuning
 │   └── catboost_info/              # CatBoost experiment telemetry
+├── production/
+│   ├── aws_deployment.md           # AWS deployment (EC2, ECS Fargate, App Runner)
+│   ├── docker_deployment.md        # Docker containerization & orchestration guide
+│   └── streamlit_cloud_deployment.md# Streamlit Community Cloud deployment guide
 ├── .dockerignore                   # Docker build context exclusions
 ├── .env.example                    # Environment variable configuration template
 ├── .gitignore                      # Git tracking rules for Python & ML artifacts
@@ -133,15 +137,13 @@ The project includes an optimized `Dockerfile` adhering to cloud-native security
 - Implements continuous container healthcheck endpoint probe (`/_stcore/health`).
 - Leverages Docker layer caching for rapid rebuilds.
 
-### Build Docker Image
+### Build & Run Locally with Docker
 
 ```bash
+# Build Docker Image
 docker build -t telecom-churn-app:latest .
-```
 
-### Run Docker Container
-
-```bash
+# Run Docker Container
 docker run -d \
   --name telecom-churn \
   -p 8501:8501 \
@@ -149,13 +151,19 @@ docker run -d \
   telecom-churn-app:latest
 ```
 
-Access the service at `http://localhost:8501`.
+Access the service at `http://localhost:8501`. Verify container health via `docker inspect --format='{{json .State.Health.Status}}' telecom-churn`.
 
-### Check Container Health
+---
 
-```bash
-docker inspect --format='{{json .State.Health.Status}}' telecom-churn
-```
+## 🚀 Production Deployment Playbooks
+
+Step-by-step production runbooks for each target cloud and hosting environment are available in the [`production/`](production/) directory:
+
+| Environment | Guide | Description |
+| :--- | :--- | :--- |
+| **Docker** | [**Docker Deployment Guide**](production/docker_deployment.md) | Multi-stage build, container hardening, resource limits, Docker Compose orchestration, and health checks |
+| **Streamlit Cloud** | [**Streamlit Cloud Guide**](production/streamlit_cloud_deployment.md) | Continuous deployment from GitHub, secrets management, cold start optimization, and live monitoring |
+| **Amazon Web Services (AWS)** | [**AWS Deployment Guide**](production/aws_deployment.md) | Production deployments on **EC2 (with Nginx SSL)**, **ECS Fargate (serverless containers)**, and **AWS App Runner** |
 
 ---
 

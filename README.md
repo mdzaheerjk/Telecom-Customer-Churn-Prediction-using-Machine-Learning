@@ -52,7 +52,7 @@ Telecom-Customer-Churn-Prediction-using-Machine-Learning/
 ├── Data/
 │   └── Customer-Churn.csv          # Telecommunications customer dataset (7,043 rows)
 ├── Interview Questions/
-│   └── Interview_Questions.md      # Top 50 tiered interview questions (Beginner to FAANG Level)
+│   └── Interview_Questions.md      # Top 50 Production-Grade AI/ML Interview Questions
 ├── Models/
 │   ├── Ada_boost_churn_model.pkl   # Production-deployed AdaBoost classifier
 │   ├── Best_optuna_churn_model.pkl # Optuna-tuned XGBoost model checkpoint
@@ -206,15 +206,15 @@ An executive-ready, 12-slide PowerPoint presentation is located in the [`present
 
 ## 📚 Interview Preparation & Self-Study Guide
 
-A dedicated, comprehensive technical interview guide featuring **50 tiered questions and answers** is located in [`Interview Questions/Interview_Questions.md`](Interview%20Questions/Interview_Questions.md):
+A dedicated, comprehensive technical interview guide featuring **50 production-grade interview questions and answers** is located in [`Interview Questions/Interview_Questions.md`](Interview%20Questions/Interview_Questions.md):
 
-- 📈 **5-Tier Progression Roadmap:**
-  - **Tier 1 (Q1–Q10):** Foundations & Core Data Science *(Beginner)*
-  - **Tier 2 (Q11–Q20):** Feature Engineering & Class Imbalance *(Intermediate)*
-  - **Tier 3 (Q21–Q30):** Algorithmic Math & Bayesian Optimization *(Advanced)*
-  - **Tier 4 (Q31–Q40):** Business Economics, Calibration & Explainability *(Senior / Staff)*
-  - **Tier 5 (Q41–Q50):** FAANG System Design & Critical Thinking Scenarios *(Principal / FAANG)*
-- 💡 **Active Recall Format:** Interactive collapsible answers (`<details><summary>`), mathematical derivations, failure-mode scenarios, and senior engineer differentiators.
+- 📈 **5-Part Progression Roadmap:**
+  - **Part 1 (Q1–Q12):** Data Pipeline, EDA & Hygiene *(Beginner to Intermediate)*
+  - **Part 2 (Q13–Q22):** Feature Engineering & Class Imbalance Strategies *(Intermediate to Advanced)*
+  - **Part 3 (Q23–Q34):** Algorithms, Mathematical Intuition & Hyperparameter Tuning *(Advanced)*
+  - **Part 4 (Q35–Q42):** Metrics, Asymmetric Cost Thresholds & Explainability *(Advanced to Critical Thinking)*
+  - **Part 5 (Q43–Q50):** Production Engineering, Deployment & MLOps *(Critical Thinking / Senior)*
+- 💡 **Active Recall Format:** Interactive collapsible answers (`<details><summary>`), mathematical derivations, failure-mode scenarios, and real-world AI/ML interview insights.
 
 👉 [**Open the 50-Question Interactive Interview Guide**](Interview%20Questions/Interview_Questions.md)
 

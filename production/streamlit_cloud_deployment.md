@@ -1,5 +1,7 @@
 # ☁️ Production Deployment Guide: Streamlit Community Cloud
 
+> 🌐 **Live Deployed Application:** [**https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/**](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/)
+
 This guide provides a step-by-step walkthrough for deploying the Telecom Customer Churn Prediction application to **Streamlit Community Cloud** with continuous deployment from GitHub.
 
 ---
@@ -50,7 +52,7 @@ This guide provides a step-by-step walkthrough for deploying the Telecom Custome
    - **Repository:** `mdzaheerjk/Telecom-Customer-Churn-Prediction-using-Machine-Learning`
    - **Branch:** `main`
    - **Main file path:** `app.py`
-   - **App URL:** (Optional) Customize the URL subdomain (e.g., `telecom-churn-predictor.streamlit.app`).
+   - **App URL:** `telecom-customer-churn-prediction-using-machine-learning.streamlit.app`
 
 ### Step 3: Configure Advanced Settings
 1. Click **"Advanced settings..."** before deploying.

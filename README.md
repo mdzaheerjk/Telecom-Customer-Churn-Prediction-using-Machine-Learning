@@ -1,11 +1,14 @@
 # 📡 Telecom Customer Churn Prediction & Retention Engine
 
+[![Live Demo](https://img.shields.io/badge/Streamlit_App-Live_Demo-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.35+-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.5.0-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![AWS](https://img.shields.io/badge/AWS-EC2%20%7C%20ECS%20Fargate-FF9900?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+> 🌐 **Live Interactive Web Application:** [**telecom-customer-churn-prediction-using-machine-learning.streamlit.app**](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/)
 
 An end-to-end, industry-grade machine learning system designed to predict customer churn in the telecommunications sector. The platform identifies at-risk subscribers in real time, diagnoses root-cause churn drivers, and prescribes proactive retention interventions through a secure, containerized web application.
 
@@ -183,7 +186,7 @@ Comprehensive, step-by-step production deployment guides are available in the [`
 | Hosting Environment | Runbook Guide | Architecture & Features |
 | :--- | :--- | :--- |
 | **Docker & Compose** | [**Docker Deployment Guide**](production/docker_deployment.md) | Multi-stage caching, security hardening, resource caps (`--cpus`, `--memory`), and Docker Compose orchestration |
-| **Streamlit Cloud** | [**Streamlit Cloud Guide**](production/streamlit_cloud_deployment.md) | Zero-ops GitOps CI/CD from GitHub, encrypted secrets (`secrets.toml`), memory management, and live logs |
+| **Streamlit Cloud** | [**Streamlit Cloud Guide**](production/streamlit_cloud_deployment.md)<br>👉 [🌐 **Live Application**](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/) | Zero-ops GitOps CI/CD from GitHub, encrypted secrets (`secrets.toml`), memory management, and live logs |
 | **Amazon Web Services** | [**AWS Deployment Guide**](production/aws_deployment.md) | Complete setup for **EC2 (with Nginx & Let's Encrypt SSL)**, **ECS Fargate (serverless containers)**, and **AWS App Runner** |
 
 ---

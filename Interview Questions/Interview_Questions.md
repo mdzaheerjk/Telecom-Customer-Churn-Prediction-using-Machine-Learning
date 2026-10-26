@@ -1,7 +1,10 @@
 # 📱 Telecom Customer Churn Prediction — Top 50 Production-Grade AI/ML Interview Questions
 
+[![Live Demo](https://img.shields.io/badge/Streamlit_App-Live_Demo-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/)
+
 > **Production-Grade AI/ML Interview Preparation Guide**  
-> Calibrated from **fundamental concepts** to **advanced mathematical mechanics and production critical thinking**. Each question reflects actual questions asked by senior machine learning interviewers, focusing on **what techniques were used, why they were chosen in this specific situation, and how to defend your architectural decisions**.
+> Calibrated from **fundamental concepts** to **advanced mathematical mechanics and production critical thinking**. Each question reflects actual questions asked by senior machine learning interviewers, focusing on **what techniques were used, why they were chosen in this specific situation, and how to defend your architectural decisions**.  
+> 🌐 **Live Interactive App:** [**telecom-customer-churn-prediction-using-machine-learning.streamlit.app**](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/)
 
 ---
 

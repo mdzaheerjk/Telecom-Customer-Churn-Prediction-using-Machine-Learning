@@ -189,10 +189,15 @@ def main():
             st.write("**Serving Framework:** Scikit-Learn + Streamlit")
 
         with st.container(border=True):
-            st.subheader("🛡️ Enterprise Governance")
-            st.caption("• **Runtime:** Python 3.11 Slim Container")
+            st.subheader("🌐 Live Production Deployment")
+            st.link_button(
+                "🚀 Open Live Cloud App",
+                "https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/",
+                use_container_width=True
+            )
+            st.caption("• **Host:** Streamlit Community Cloud")
+            st.caption("• **Runtime:** Python 3.11 Slim")
             st.caption("• **Security:** Non-Root UID 10001 (CIS)")
-            st.caption("• **Drift Monitor:** PSI Leading Indicators")
 
     # --------------------------------------------------------------------------
     # MAIN HEADER & TOP KPI CARDS
@@ -593,7 +598,7 @@ def main():
 
     st.divider()
     st.caption(
-        "Telecom Customer Churn Intelligence System | Built with pure Streamlit components & Scikit-Learn | Enterprise MLOps Standard"
+        "Telecom Customer Churn Intelligence System | [🌐 Live Production App](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/) | Built with pure Streamlit components & Scikit-Learn | Enterprise MLOps Standard"
     )
 
 

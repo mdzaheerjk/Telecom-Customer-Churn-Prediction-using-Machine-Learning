@@ -42,6 +42,8 @@ Predict telecommunications customer churn in real-time using production-grade ma
 Telecom-Customer-Churn-Prediction-using-Machine-Learning/
 ├── Data/
 │   └── Customer-Churn.csv          # Telecommunications customer dataset
+├── Interview Questions/
+│   └── Interview_Questions.md      # Top 50 interactive self-study interview questions
 ├── Models/
 │   ├── Ada_boost_churn_model.pkl   # Production AdaBoost classifier
 │   ├── Best_optuna_churn_model.pkl # Optuna-tuned XGBoost model checkpoint
@@ -172,6 +174,19 @@ docker inspect --format='{{json .State.Health.Status}}' telecom-churn
 
 ---
 
+## 📚 Interview Preparation & Self-Study Guide
+
+A dedicated, production-grade self-study guide containing **50 high-frequency technical interview questions and answers** is available in [`Interview Questions/Interview_Questions.md`](Interview%20Questions/Interview_Questions.md):
+
+- 📊 **Self-Study Progress Tracker** for active recall and assessment.
+- 💡 **Interactive Collapsible Answers (`<details><summary>`)** with step-by-step mathematical derivations, code demonstrations, and senior engineering insights.
+- 🎯 Covers the complete lifecycle: Business context, EDA, tenure discretization, class imbalance (SMOTE vs. Cost-sensitive weighting), boosting algorithms (AdaBoost, XGBoost, CatBoost, LightGBM), Bayesian optimization, threshold tuning, and containerized MLOps.
+
+👉 [**Open the 50-Question Interactive Self-Study Guide**](Interview%20Questions/Interview_Questions.md)
+
+---
+
 ## 📄 License
 
 This project is licensed under the terms described in the [LICENSE](LICENSE) file.
+

@@ -1,12 +1,30 @@
-streamlit
-numpy
-pandas
-matplotlib
-seaborn
-scikit-learn
-joblib
-imbalanced-learn
-xgboost
-lightgbm
-catboost
-optuna
+# ==============================================================================
+# Telecom Customer Churn Prediction - Application Dependencies
+# Organized and pinned for production reproducibility and container optimization.
+# ==============================================================================
+
+# Core Web Application Framework
+streamlit>=1.35.0,<2.0.0
+
+# Data Processing & Numerics
+pandas>=2.1.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+
+# Machine Learning Inference & Serialization
+scikit-learn>=1.4.0,<1.6.0
+joblib>=1.3.0,<2.0.0
+
+# Configuration & Environment Management
+python-dotenv>=1.0.0,<2.0.0
+
+# ------------------------------------------------------------------------------
+# Notebook & Model Training Dependencies
+# (Used in Notebooks/EDA.ipynb and Notebooks/MODEL.ipynb; uncomment if re-training)
+# ------------------------------------------------------------------------------
+# matplotlib>=3.8.0
+# seaborn>=0.13.0
+# imbalanced-learn>=0.12.0
+# xgboost>=2.0.0
+# lightgbm>=4.0.0
+# catboost>=1.2.0
+# optuna>=3.6.0

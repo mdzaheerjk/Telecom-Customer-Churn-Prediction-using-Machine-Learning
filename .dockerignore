@@ -1,0 +1,52 @@
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD and IDE configs
+.github/
+.vscode/
+.idea/
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+
+# Environments & secrets
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+env/
+
+# Jupyter notebooks & training artifacts (not needed for inference)
+Notebooks/
+catboost_info/
+*/catboost_info/
+.ipynb_checkpoints/
+
+# Testing and coverage
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+logs/
+
+# Docker & documentation
+Dockerfile*
+.dockerignore
+pyproject.toml

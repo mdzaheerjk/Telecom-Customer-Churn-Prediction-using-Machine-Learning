@@ -61,8 +61,8 @@ def preprocess_input(user_input, prep):
     df_in['tenure_bin'] = pd.cut(df_in['tenure'], bins=bins, labels=labels, include_lowest=True)
     df_in = df_in.drop(columns=['tenure'])
 
-    # 2. One-hot encoding
-    df_in_enc = pd.get_dummies(df_in, drop_first=True)
+    # 2. One-hot encoding (Do NOT use drop_first=True on single rows, or pandas drops the only level)
+    df_in_enc = pd.get_dummies(df_in)
 
     # 3. Align with template columns (fill missing dummy levels with 0)
     template_cols = prep['template_columns']
@@ -462,19 +462,19 @@ def main():
         st.divider()
         st.subheader("📊 Executive Churn Intelligence Report")
 
-        # Risk Classification & Top Banner
-        if pred_proba >= 0.60:
+        # Risk Classification & Top Banner (Calibrated to AdaBoost decision threshold)
+        if pred_proba >= 0.50:
             st.error(
-                f"🚨 **HIGH RISK ACCOUNT DETECTED — Urgent Action Required**  \n"
-                f"Model identifies an acute churn likelihood of **{pred_proba:.1%}**. Immediate targeted retention intervention is recommended."
+                f"🚨 **HIGH CHURN RISK DETECTED — Urgent Action Required**  \n"
+                f"Model identifies an acute churn likelihood of **{pred_proba:.1%}** (above the 50.0% decision threshold). Immediate targeted retention intervention is recommended."
             )
-            risk_tier = "Critical Risk"
+            risk_tier = "Critical High Risk"
             urgency = "Immediate (24–48 Hours)"
             status_delta = "High Flight Propensity"
-        elif pred_proba >= 0.35:
+        elif pred_proba >= 0.45:
             st.warning(
                 f"⚠️ **MODERATE RISK ACCOUNT — Retention Watchlist**  \n"
-                f"Model predicts a **{pred_proba:.1%}** churn probability. Subscriber exhibits vulnerability signals during contract transitions."
+                f"Model predicts a **{pred_proba:.1%}** churn probability (significantly above the 26.5% portfolio baseline). Subscriber exhibits vulnerability signals during contract transitions."
             )
             risk_tier = "Moderate Risk"
             urgency = "Proactive (14 Days)"

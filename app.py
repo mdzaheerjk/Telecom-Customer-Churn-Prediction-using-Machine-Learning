@@ -178,12 +178,6 @@ def main():
 
         preset_data = PRESETS[selected_preset] or {}
 
-        auto_calc_total = st.checkbox(
-            "Auto-Sync Total Charges",
-            value=True,
-            help="Automatically calculate estimated Total Charges as Monthly Charges × Tenure."
-        )
-
         st.divider()
 
         with st.container(border=True):
@@ -428,25 +422,16 @@ def main():
                     help="Current monthly invoice charge."
                 )
 
-                # Total Charges calculation
                 calc_total = float(user_input["MonthlyCharges"] * max(user_input["tenure"], 1))
-                if auto_calc_total:
-                    user_input["TotalCharges"] = round(calc_total, 2)
-                    st.number_input(
-                        "Total Cumulative Charges ($) [Auto-Synced]",
-                        value=user_input["TotalCharges"],
-                        disabled=True,
-                        help="Calculated dynamically as Monthly Charges × Tenure."
-                    )
-                else:
-                    total_def = float(preset_data.get("TotalCharges", calc_total))
-                    user_input["TotalCharges"] = st.number_input(
-                        "Total Cumulative Charges ($)",
-                        min_value=0.0,
-                        max_value=9000.0,
-                        value=total_def,
-                        step=10.0
-                    )
+                total_def = float(preset_data.get("TotalCharges", calc_total))
+                user_input["TotalCharges"] = st.number_input(
+                    "Total Cumulative Charges ($)",
+                    min_value=0.0,
+                    max_value=10000.0,
+                    value=round(total_def, 2),
+                    step=10.0,
+                    help="Total cumulative charges billed to customer over their entire tenure."
+                )
 
                 ann_rev = user_input["MonthlyCharges"] * 12
                 st.metric(

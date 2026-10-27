@@ -188,17 +188,6 @@ def main():
             st.write("**Target Dimensions:** 34 Features")
             st.write("**Serving Framework:** Scikit-Learn + Streamlit")
 
-        with st.container(border=True):
-            st.subheader("🌐 Live Production Deployment")
-            st.link_button(
-                "🚀 Open Live Cloud App",
-                "https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/",
-                use_container_width=True
-            )
-            st.caption("• **Host:** Streamlit Community Cloud")
-            st.caption("• **Runtime:** Python 3.11 Slim")
-            st.caption("• **Security:** Non-Root UID 10001 (CIS)")
-
     # --------------------------------------------------------------------------
     # MAIN HEADER & TOP KPI CARDS
     # --------------------------------------------------------------------------

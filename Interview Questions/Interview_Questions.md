@@ -1,902 +1,1061 @@
-# 📱 Telecom Customer Churn Prediction — Top 50 Production-Grade AI/ML Interview Questions
+# 📡 Telecom Customer Churn Prediction — Top 50 Interview Questions & Answers
 
 [![Live Demo](https://img.shields.io/badge/Streamlit_App-Live_Demo-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/)
+![Questions](https://img.shields.io/badge/Questions-50-blue?style=flat-square)
+![Level](https://img.shields.io/badge/Level-Beginner_→_Senior-8A2BE2?style=flat-square)
+![Verified](https://img.shields.io/badge/Verified_against_repo-28_Oct_2026-2EA043?style=flat-square)
 
-> **Production-Grade AI/ML Interview Preparation Guide**  
-> Calibrated from **fundamental concepts** to **advanced mathematical mechanics and production critical thinking**. Each question reflects actual questions asked by senior machine learning interviewers, focusing on **what techniques were used, why they were chosen in this specific situation, and how to defend your architectural decisions**.  
-> 🌐 **Live Interactive App:** [**telecom-customer-churn-prediction-using-machine-learning.streamlit.app**](https://telecom-customer-churn-prediction-using-machine-learning.streamlit.app/)
-
----
-
-## 📑 Learning Progression & Topic Map
-
-```text
-Part 1: Data Pipeline, EDA & Cleaning (Q1–Q12)       ──► Raw data issues, string blank coercion, exploratory insights
-Part 2: Feature Engineering & Imbalance (Q13–Q22)    ──► Tenure binning, dummy trap, SMOTE vs. SMOTEENN vs. Sample Weights
-Part 3: Algorithms & Hyperparameter Tuning (Q23–Q34) ──► AdaBoost math, XGBoost, CatBoost, Optuna TPE, CV leakage
-Part 4: Metrics, Thresholds & Explainability (Q35–Q42)──► Precision-Recall curves, asymmetric cost matrix, SHAP axioms
-Part 5: Production Deployment & System Design (Q43–Q50)► Training-serving skew, caching, Docker security, drift monitoring
-```
+> **Interview guide for `mdzaheerjk/Telecom-Customer-Churn-Prediction-using-Machine-Learning`.**
+> Every answer is tied to this repo's actual code, notebooks and data — the way a real interviewer probes a portfolio project: *what did you do, why, what are its weaknesses, and what would you change?*
+> Figures were re-checked against `Data/Customer-Churn.csv`, `Notebooks/MODEL.ipynb`, `app.py` and the deployed `Ada_boost_churn_model.pkl`. Figures labelled **re-run** come from stratified 80/20 splits over 10 seeds with scikit-learn 1.5.2 (the pickle's training version); the notebook itself used a single unseeded split.
 
 ---
 
-## 📊 Self-Study Progress Checklist
+## 🎤 The 30-Second Pitch
 
-| Part | Topic Focus | Difficulty | Questions | Completed |
-| :--- | :--- | :---: | :---: | :---: |
-| **Part 1** | Data Pipeline, EDA & Hygiene | Beginner to Intermediate | Q1 – Q12 | `[ ]` |
-| **Part 2** | Feature Engineering & Class Imbalance | Intermediate to Advanced | Q13 – Q22 | `[ ]` |
-| **Part 3** | Algorithms, Math & Hyperparameter Tuning | Advanced | Q23 – Q34 | `[ ]` |
-| **Part 4** | Metrics, Thresholds & Model Explainability | Advanced / Critical Thinking | Q35 – Q42 | `[ ]` |
-| **Part 5** | Production Engineering, Deployment & MLOps | Critical Thinking / Senior | Q43 – Q50 | `[ ]` |
+> *"I built an end-to-end churn system on the 7,043-customer Telco dataset. After cleaning, I engineered 34 features and benchmarked decision trees, random forests, XGBoost, LightGBM, CatBoost and AdaBoost against several imbalance strategies — SMOTE, ADASYN, SMOTEENN and cost-sensitive weighting. I deployed a cost-weighted AdaBoost that catches about 80% of churners at roughly 51–53% precision, wrapped it in a non-root Docker container and a Streamlit app that returns a risk score, a risk tier and rule-based retention actions. The main thing I learned is that all the models land at about 0.84 ROC-AUC, so the real engineering is in calibration, thresholds tied to retention cost, and keeping training and serving consistent."*
 
 ---
 
-## Part 1: Data Pipeline, EDA & Cleaning (Q1–Q12)
+## 🔢 Numbers to Know Cold
 
-### 🔹 Q1: Walk me through this project. What problem were you solving, and how did you frame it as an ML task?
-- **Difficulty:** `Beginner`
-- **Topic:** `Problem Formulation`
-- **Why Interviewers Ask This:** Tests your ability to communicate the big picture clearly in 60 seconds without getting lost in low-level details.
+| Fact | Value |
+| :--- | :--- |
+| Dataset | 7,043 rows × 21 columns (19 features + `customerID` + `Churn`) |
+| Churners / churn rate | 1,869 / **26.54%** — majority-class accuracy is **73.4%** |
+| Dirty `TotalCharges` | 11 blank strings, all with `tenure = 0` → 7,032 clean rows |
+| Final feature count | **34** (3 numeric + 31 dummies, `tenure` replaced by 6 cohort bins) |
+| Split used in notebook | 80/20, **no `random_state`, no `stratify`** → 5,625 train (4,160 / 1,465) and 1,407 test |
+| Class weight | `4160 / 1465 =` **2.84** |
+| Deployed model | `AdaBoostClassifier`: 50 depth-1 stumps, `learning_rate=1.0`, `SAMME.R`, trained with `sample_weight` |
+| Notebook test result (single split) | Accuracy 0.738 · Precision 0.53 · **Recall 0.82** · F1 0.64 · confusion matrix `[[706, 297], [71, 333]]` |
+| **Re-run, 10 stratified seeds** | ROC-AUC **0.844 ± 0.008** · PR-AUC 0.656 · Recall 0.805 ± 0.015 · Precision 0.514 · F1 0.627 · Accuracy 0.746 · Brier 0.244 |
+| Brier of "always predict 26.5%" | 0.195 — the deployed model's raw scores (0.244) are *worse* than this, i.e. they are not probabilities |
+| Tuning | RandomizedSearchCV 50×5-fold (best CV F1 0.630) · Optuna 100 trials (best CV F1 0.6335) |
+
+---
+
+## 🔍 Repo Audit — What an Interviewer Will Find (and What to Say)
+
+Strong candidates raise these themselves. Each row is a real finding from reading the code and re-running it.
+
+| # | Finding | Where | What to say |
+| :-: | :--- | :--- | :--- |
+| 1 | Split has no `random_state` / `stratify` | `MODEL.ipynb` cells 9, 31 | *"Results vary ±0.01–0.02 per run, so I treat 0.82 recall as ≈0.80 ± 0.02 and report repeated stratified CV."* |
+| 2 | Model chosen on the same test set used to compare ~15 models | `MODEL.ipynb` | *"Winner's-curse bias; I'd carve out a validation set or use nested CV and touch the test set once."* |
+| 3 | App sidebar shows **accuracy 81.2%**; the notebook never computes ROC-AUC | `app.py` | *"AUC 0.84 reproduces; 81.2% accuracy does not — the weighted model scores ≈74–75%. I'd compute metrics in a script and load them from a JSON artifact."* |
+| 4 | "Churn probability" is a score squeezed into ≈0.47–0.52 | `app.py` tiers | *"SAMME.R averages stump votes, so probabilities collapse towards 0.5. Ranking is excellent, calibration is poor — I'd calibrate before showing percentages."* |
+| 5 | README tiers (35% / 60%) differ from code tiers (45% / 50%) | README vs `app.py` | *"README thresholds were never reachable with this score range; code thresholds were tuned to it. I'd derive tiers from calibrated probabilities and expected cost."* |
+| 6 | Scaler isn't saved; app refits it on all 7,032 rows | `build_preprocessor` | *"Tiny training-serving skew (≈0.6% label flips in a re-run). Fix: persist one sklearn `Pipeline`."* |
+| 7 | "Top Risk Feature Breakdown" is a hard-coded global chart | `app.py` | *"It's the model's global stump-count importance, not a per-customer explanation. SHAP would give local attribution."* |
+| 8 | UI claims like "over 52% of churn" and "< 12 ms" are hard-coded | `app.py` | *"Recomputed: 1–12-month customers without dependents churn at 51.0% and make up 47.6% of all churners. Latency should be measured, not asserted."* |
+| 9 | `MinMaxScaler` fitted on already-standardised data | `MODEL.ipynb` cell 37 | *"Harmless for trees but sloppy; scaling belongs in a Pipeline fit on train only."* |
+| 10 | README benchmark rows differ from notebook outputs (e.g. Random Forest) | README vs notebook | *"Numbers came from separate unseeded runs; I now regenerate the table from a script with fixed seeds."* |
+| 11 | README/docs describe env-var config, logging and a multi-stage Dockerfile; `app.py` reads no env vars and the Dockerfile is single-stage | docs vs code | *"Docs got ahead of the code — I aligned them and listed config/logging as a patch."* |
+| 12 | Optuna's final refit drops `random_state` / `eval_metric` | `MODEL.ipynb` cell 62 | *"`best_params` only contains tuned keys; fixed params must be re-added for reproducibility."* |
+
+---
+
+## 📑 Progress Tracker
+
+| Part | Focus | Questions | Done |
+| :--- | :--- | :---: | :---: |
+| **1** | Project story, data & EDA | Q1 – Q10 | `[ ]` |
+| **2** | Preprocessing, features & class imbalance | Q11 – Q22 | `[ ]` |
+| **3** | Models, math & tuning | Q23 – Q34 | `[ ]` |
+| **4** | Evaluation, calibration, explainability & business | Q35 – Q42 | `[ ]` |
+| **5** | Production, MLOps & system design | Q43 – Q50 | `[ ]` |
+
+---
+
+# Part 1 — Project Story, Data & EDA (Q1–Q10)
+
+### 🟢 Q1. Walk me through this project in two minutes.
+
+**Topic:** Problem framing · **Interviewer wants:** structure, ownership, honesty about limits.
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"I built a machine learning system to predict customer churn for a telecom company with ~7,000 subscribers. Churn attrition is costly because customer acquisition is 5 to 7 times more expensive than retention. I framed this as a supervised binary classification problem where the target indicates whether a subscriber leaves within a billing cycle. After benchmarking multiple models and imbalance strategies, I deployed a sample-weighted AdaBoost classifier in a secure, containerized Streamlit application that provides real-time churn probabilities, risk tiers, and personalized retention action items."
+**Structure (Problem → Data → Model → Deployment → Lesson):**
+1. *Problem:* telecom churn is costly; the goal is to rank customers by risk so retention offers go to the right people.
+2. *Data:* 7,043 customers, 26.5% churn, mostly categorical service/billing fields.
+3. *Model:* benchmarked 6+ algorithms × 5 imbalance strategies; deployed cost-weighted AdaBoost (recall ≈0.80, precision ≈0.51).
+4. *Deployment:* Streamlit app, hardened Docker image, deployment guides for Streamlit Cloud, Docker and AWS.
+5. *Lesson:* ROC-AUC plateaus at ≈0.84 for every model — the leverage is calibration, thresholds and consistency between training and serving.
 
-#### Why this technique in this situation:
-- Contractual telecom churn has explicit, observable cancellation events (unlike unobserved churn in e-commerce), making binary classification ($y \in \{0, 1\}$) the natural formulation.
-- We predict a calibrated probability $P(\text{Churn} \mid X)$ rather than a hard 0/1 label so the business can prioritize retention budgets on the highest-risk cohorts.
+**Tip:** end by naming one weakness and its fix (e.g. "scores aren't calibrated; next step is isotonic calibration"). It signals maturity and steers the follow-up questions to ground you control.
 </details>
 
 ---
 
-### 🔹 Q2: In `Customer-Churn.csv`, `TotalCharges` imported as an `object` (string) rather than a `float`. What was the root cause, and how did you fix it?
-- **Difficulty:** `Beginner`
-- **Topic:** `Data Cleaning & Type Coercion`
-- **Why Interviewers Ask This:** Tests if you actually inspected the dirty data yourself or just ran high-level libraries.
+### 🟢 Q2. What business decision does this model drive, and how do you know it's worth building?
+
+**Topic:** Business value · **Interviewer wants:** you connect a metric to money.
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"`TotalCharges` had 11 records containing blank space strings (`' '`). Pandas could not infer numeric type and defaulted to `object`. Looking closely, all 11 records had `tenure = 0`—brand-new customers who had just signed up and hadn't completed their first monthly billing cycle yet."
+The model decides **who gets a retention contact**. It pays off when
 
-#### The Exact Code Fix:
+$$\text{expected gain per contacted customer} = p \cdot s \cdot V - c > 0$$
+
+with $p$ = true churn probability, $s$ = chance the offer saves the customer, $V$ = value retained, $c$ = offer cost.
+
+*Illustration (assumptions, not data):* with $V = \$1{,}200$ (the app's acquisition-cost figure), $s = 30\%$, $c = \$50$, contact anyone with $p > 50/360 \approx 14\%$. That is far below a 0.5 cut-off — which is why the cut-off must come from costs, not from a default.
+
+**Trap:** "99% accuracy"-style answers. Say you evaluate in **dollars saved per 1,000 customers contacted** and via a holdout campaign test.
+</details>
+
+---
+
+### 🟢 Q3. Describe the dataset and the target. Is it imbalanced?
+
+**Topic:** Data understanding
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- 7,043 customers, 21 columns: demographics, services (phone, internet, add-ons, streaming), account (contract, billing, payment), `tenure`, `MonthlyCharges`, `TotalCharges`, and `Churn`.
+- Churn = 26.54% (1,869). A dummy model that always says "No" scores **73.4% accuracy**.
+- Imbalance ratio ≈ **2.8 : 1** — *moderate*, not extreme. That matters: resampling gains are modest, which the benchmark confirms (every strategy lands at minority F1 0.61–0.64).
+
+**Follow-up:** *"Would you call that highly imbalanced?"* → No; at 2.8:1 class weights or threshold tuning are usually enough, and SMOTE-style synthesis is rarely worth the risk.
+</details>
+
+---
+
+### 🟢 Q4. `TotalCharges` loaded as a string. Why, and how did you fix it? What happens at `tenure = 0` in the app?
+
+**Topic:** Data cleaning
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+**Cause:** 11 rows contain a blank string `' '`, so pandas infers `object`. All 11 have `tenure = 0` — brand-new customers not yet billed.
+
 ```python
-# Convert blank strings to NaN safely
-df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
-
-# For training data, drop these 11 rows (<0.15% of 7,043 total samples)
-df.dropna(subset=['TotalCharges'], inplace=True)
+telco['TotalCharges'] = pd.to_numeric(telco['TotalCharges'], errors='coerce')
+telco.dropna(how='any', inplace=True)   # 11 rows (0.16%) → 7,032 remain
 ```
 
-#### Interview Follow-Up Trap:
-*Interviewer: "What if a user enters tenure = 0 in your live production web app?"*  
-**Your Answer:** "In the production app, we cannot drop the input row. We validate `if tenure == 0: TotalCharges = 0.0` or default it to `MonthlyCharges` so the pipeline never throws an uncaught NaN exception."
+**Why drop vs impute?** They are structurally missing (no bill yet), a tiny fraction, and imputing 0 would add a pattern the model never sees at training time.
+
+**Live-app edge case:** the slider allows `tenure = 0`, but training never saw it. The app defaults `TotalCharges` to `MonthlyCharges × max(tenure, 1)` and `pd.cut(..., include_lowest=True)` places it in the `1-12` bin. Better: validate inputs (`tenure ≥ 1`) or document that scores for new sign-ups are out-of-distribution.
 </details>
 
 ---
 
-### 🔹 Q3: Why did you drop `customerID` before training? Wouldn't an ID feature help identify individual customers?
-- **Difficulty:** `Beginner`
-- **Topic:** `Feature Selection & Leakage`
-- **Why Interviewers Ask This:** Tests your understanding of high-cardinality identifiers, memorization, and generalization.
+### 🟡 Q5. Which features could leak the target, and why drop `customerID`?
+
+**Topic:** Leakage · **Interviewer wants:** you think about *when* each feature is measured.
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"`customerID` is an arbitrary surrogate primary key with 7,043 unique values. It carries zero predictive signal about customer behavior. If kept, decision trees can split on unique IDs to isolate individual training samples, achieving 100% training accuracy while memorizing noise and failing completely on new customers."
+- `customerID` is a unique key (7,043 distinct values) — pure memorisation fuel, no signal.
+- **Subtle leakage:** in this snapshot, `tenure` and `TotalCharges` for churners are measured **at exit**, so the data partly encodes "how long until they left". In production you score *active* customers whose tenure is still growing.
+- The clean design is a **point-in-time dataset**: features as of date *t*, label = "churned in (t, t + 30 days]".
 
-#### Key Takeaway:
-Identifiers should only be used as join keys in data pipelines, never as input features to machine learning estimators.
+**Say:** *"The public dataset has no timestamps, so I can't do temporal validation; with real data I'd build snapshots and split by time."*
 </details>
 
 ---
 
-### 🔹 Q4: What did your bivariate analysis reveal about `Contract` versus `Churn`?
-- **Difficulty:** `Beginner`
-- **Topic:** `Exploratory Data Analysis`
-- **Why Interviewers Ask This:** Assesses whether you extracted actionable business domain patterns from the data.
+### 🟢 Q6. What were your key EDA findings? (Give numbers.)
+
+**Topic:** EDA · **Interviewer wants:** insight, not chart descriptions.
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Contract duration was the single strongest predictor of churn:
-- **Month-to-month contracts:** ~42.7% churn rate.
-- **One-year contracts:** ~11.3% churn rate.
-- **Two-year contracts:** ~2.8% churn rate.
-Month-to-month subscribers re-evaluate their provider every 30 days with zero cancellation friction, whereas annual contracts lock in retention."
+| Segment | Churn rate |
+| :--- | :---: |
+| Month-to-month / 1-year / 2-year contract | **42.7%** / 11.3% / 2.8% |
+| Tenure 1–12 months → 61–72 months | **47.7%** → 6.6% |
+| Fiber optic / DSL / no internet | **41.9%** / 19.0% / 7.4% |
+| Electronic check vs credit-card autopay | **45.3%** vs 15.2% |
+| No tech support vs tech support | 41.6% vs 15.2% |
+| Senior vs non-senior | 41.7% vs 23.6% |
+| No dependents vs dependents | 31.3% vs 15.5% |
 
-#### Business Recommendation:
-"The marketing team's primary intervention should be incentivizing month-to-month subscribers to transition to 1-year contracts via introductory bill credits."
+**Headline:** 55% of all churners leave in the first 12 months. Average monthly charge is $74.4 for churners vs $61.3 for stayers.
+
+**So what?** Focus on first-year onboarding and nudging month-to-month customers to term contracts and autopay.
 </details>
 
 ---
 
-### 🔹 Q5: How did `InternetService` and `TechSupport` interact in your EDA?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Feature Interactions`
-- **Why Interviewers Ask This:** Tests your ability to discover multi-feature interactions rather than just single-column correlations.
+### 🟡 Q7. Fiber-optic customers churn more. Is fiber causing churn?
+
+**Topic:** Confounding & interactions
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Subscribers with **Fiber optic** had a significantly higher churn rate (~41.9%) than DSL (~19.0%) or No Internet (~7.4%). When I cross-referenced this with support add-ons, I found that Fiber optic customers who had **no Tech Support** or **no Online Security** had the highest churn in the entire dataset. Fiber optic plans are premium-priced; when customers experience technical disruptions without dedicated support, their perceived price-to-value drops, prompting cancellation."
+Not necessarily. Fiber is **priced higher** and is sold more often to month-to-month, electronic-check customers — all churn drivers.
+
+**Interaction evidence:** fiber customers *without* tech support churn at **49.4%**; fiber customers *with* it churn at **22.6%**. The risk sits in the combination, so the retention action is "bundle support with fiber", not "stop selling fiber".
+
+**Rigour:** a stratified table or a model with both terms shows association; only a randomised offer shows causation (see Q41).
 </details>
 
 ---
 
-### 🔹 Q6: What did the distribution of `PaymentMethod` show, and what is the behavioral explanation?
-- **Difficulty:** `Beginner`
-- **Topic:** `Behavioral EDA`
-- **Why Interviewers Ask This:** Evaluates how well you connect data patterns to customer psychology.
+### 🟡 Q8. Did you check multicollinearity? Does it matter for your model?
+
+**Topic:** Statistics
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Customers paying via **Electronic check churned at ~45.3%**, compared to only **~15.2% to 16.7%** for automated credit card or bank transfer payments. Writing or approving a monthly electronic check forces active awareness of the bill amount every month, whereas automated autopay introduces billing inertia."
+Yes: `TotalCharges` correlates **0.83** with `tenure` and 0.65 with `MonthlyCharges` (it is roughly their product).
+
+- **Linear/logistic models:** coefficients become unstable → check VIF, drop or combine features, or use L2.
+- **Tree ensembles:** unaffected for prediction; each split picks one feature. But **importance gets split** between correlated features, which affects interpretation.
+- Note: you replaced `tenure` with `tenure_bin` but kept `TotalCharges`, which still proxies tenure — the information was reduced, not removed.
 </details>
 
 ---
 
-### 🔹 Q7: Did you find multicollinearity among the numerical features? How did you test for it?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Multicollinearity & VIF`
-- **Why Interviewers Ask This:** Checks mathematical rigor in verifying feature relationships.
+### 🟡 Q9. Voluntary vs involuntary churn — and what is the prediction horizon here?
+
+**Topic:** Problem definition
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Yes. `TotalCharges` is approximately the product of `tenure` and `MonthlyCharges`. I tested this using Pearson correlation matrices ($r \approx 0.82$) and Variance Inflation Factor ($\text{VIF} > 10$ on `TotalCharges`). While multicollinearity destabilizes coefficient estimates in Linear/Logistic Regression, tree-based models like AdaBoost and XGBoost are invariant to collinearity because each node split evaluates features independently."
+- **Voluntary:** customer chooses to leave (price, competitor, service). **Involuntary:** service ends for non-payment/failed cards.
+- The dataset says "customers who left last month" — mostly voluntary, but the label doesn't distinguish.
+- **Horizon is undefined** in the public data. In production: define it (e.g. 30 days) and consider **survival analysis** (Cox / discrete-time hazard) when *when* matters, not just *whether*.
 </details>
 
 ---
 
-### 🔹 Q8: Why did you convert the target variable `Churn` from `'Yes'`/`'No'` to `1`/`0`?
-- **Difficulty:** `Beginner`
-- **Topic:** `Target Encoding`
-- **Why Interviewers Ask This:** Basic data preparation check.
+### 🟢 Q10. What data-quality checks did you run besides `TotalCharges`?
+
+**Topic:** Data hygiene
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Scikit-learn and gradient boosting estimators require numerical target arrays for computing mathematical loss functions (LogLoss, Exponential Loss). I mapped `'Yes' -> 1` (positive churn class) and `'No' -> 0` (negative retained class)."
+- Null/duplicate/ID-uniqueness checks; value-set checks for every categorical column.
+- **Inconsistent encodings:** `SeniorCitizen` is 0/1 while other flags are `Yes/No`; add-on columns use a third level `"No internet service"` that duplicates information in `InternetService = No`.
+- Range checks: `tenure` 0–72, `MonthlyCharges` ≈ 18–119.
+- In production add a **schema contract** (Pydantic / Pandera) so bad inputs fail loudly instead of becoming silent zeros after `reindex(fill_value=0)`.
 </details>
 
 ---
 
-### 🔹 Q9: What is the difference between voluntary and involuntary churn, and which one does this dataset represent?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Domain Problem Framing`
-- **Why Interviewers Ask This:** Demonstrates senior telecom industry domain awareness.
+# Part 2 — Preprocessing, Features & Class Imbalance (Q11–Q22)
+
+### 🟢 Q11. Why bin `tenure`, and what are the bins?
+
+**Topic:** Feature engineering
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"- **Voluntary Churn:** A customer actively chooses to cancel their service due to price, competitor offers, or service dissatisfaction.
-- **Involuntary Churn:** Service is terminated due to payment processing failures (expired credit card, insufficient funds).
-This dataset primarily captures **voluntary churn**, which requires proactive value-based incentives (discounts, service upgrades), whereas involuntary churn is resolved through automated dunning workflows and card-updater APIs."
+Bins `[0,12,24,36,48,60,72]` → labels `1-12 … 61-72` with `include_lowest=True`. Counts: 2,175 / 1,024 / 832 / 762 / 832 / 1,407. Observed churn falls monotonically from 47.7% to 6.6%.
+
+**Honest trade-off:** trees can find their own cut-points, so binning mostly helps interpretability and linear models. It *loses* resolution (month 12 and month 13 are treated as different cohorts, month 1 and month 12 as the same). Validate with CV: keep raw `tenure` vs bins and compare PR-AUC.
 </details>
 
 ---
 
-### 🔹 Q10: Why did you use KDE (Kernel Density Estimation) plots alongside box plots during EDA?
-- **Difficulty:** `Beginner`
-- **Topic:** `Exploratory Visualizations`
-- **Why Interviewers Ask This:** Tests your statistical visualization toolkit.
+### 🟢 Q12. What is the dummy-variable trap? How did you arrive at 34 features?
+
+**Topic:** Encoding
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Box plots effectively summarize median and quartiles, but they hide multimodality. KDE plots revealed that `tenure` had a clear bimodal distribution—a massive density spike at 0–12 months (high-risk new accounts) and another spike at 60–72 months (entrenched loyal accounts). That multimodal shape justified discretizing tenure into cohorts."
+With one-hot encoding, a full set of dummies sums to 1 → perfectly collinear with the intercept. `drop_first=True` removes one level per column.
+
+**34 = 3 numeric** (`SeniorCitizen`, `MonthlyCharges`, `TotalCharges`) **+ 31 dummies:** four binary flags (gender, Partner, Dependents, PhoneService) + 8 three-level columns × 2 + Contract 2 + PaperlessBilling 1 + PaymentMethod 3 + tenure_bin 5.
+
+**Caveat:** trees don't need `drop_first`; it matters for linear models and is harmless otherwise.
 </details>
 
 ---
 
-### 🔹 Q11: How did you verify that missing values didn't exist in other columns after cleaning `TotalCharges`?
-- **Difficulty:** `Beginner`
-- **Topic:** `Data Hygiene`
-- **Why Interviewers Ask This:** Checks defensive coding habits.
+### 🟡 Q13. Does AdaBoost need feature scaling? Why is scaling in your pipeline anyway?
+
+**Topic:** Scaling
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"I ran `df.isnull().sum()`. Aside from the 11 blank strings in `TotalCharges`, all other 20 columns had 0 null values across all 7,043 rows."
+**No.** A stump splits on `x_j ≤ threshold`; any monotonic rescaling just moves the threshold. Scaling matters for linear models, SVMs, KNN, neural nets and penalised models.
+
+**Real issues in the repo:**
+1. Notebook applies `StandardScaler` to all models, then fits a `MinMaxScaler` *on the already-standardised data* (cell 37).
+2. The training scaler is **never saved**. The app refits one on all 7,032 rows, but the stumps' thresholds live in the *training split's* scaled units.
+
+A re-run shows the effect is small (max score shift ≈0.005, about 0.6% of labels flip near 0.5) — but it is avoidable: persist a single `Pipeline`, or drop the scaler for tree models.
 </details>
 
 ---
 
-### 🔹 Q12: Why did `SeniorCitizen` have unique values `[0, 1]` while other binary columns used `'Yes'` and `'No'`?
-- **Difficulty:** `Beginner`
-- **Topic:** `Schema Inconsistency`
-- **Why Interviewers Ask This:** Tests if you noticed schema quirks in raw enterprise tables.
+### 🟢 Q14. Why does accuracy fail here? Show it with your own results.
+
+**Topic:** Metrics
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"This is a common legacy database quirk where `SeniorCitizen` was stored as a binary integer flag (`0/1`) while demographic survey responses (`Partner`, `Dependents`) were stored as strings (`'Yes'/'No'`). I standardized the input handling so both types pass into one-hot encoding without type friction."
+- Baseline "always No" = **73.4%** accuracy.
+- Plain decision tree: accuracy 0.76 but churn recall 0.51, F1 0.55.
+- Deployed weighted AdaBoost: accuracy **0.738** (lower!) but recall **0.82**.
+
+The "worse" accuracy is the better business model: it deliberately trades false alarms for catching churners. Report precision/recall/F1 for the minority class, PR-AUC, and a cost-based metric.
 </details>
 
 ---
 
-## Part 2: Feature Engineering & Class Imbalance (Q13–Q22)
+### 🟡 Q15. Compare SMOTE, ADASYN and SMOTEENN. What did your experiments show?
 
-### 🔹 Q13: Why did you discretize `tenure` into bins (`tenure_bin`), and what were the exact intervals used?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Feature Engineering & Discretization`
-- **Why Interviewers Ask This:** Tests your ability to justify feature transformations from both a statistical and domain perspective.
+**Topic:** Resampling
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"I mapped continuous `tenure` into 6 annual cohort intervals:
+- **SMOTE:** interpolates between a minority point and one of its *k* neighbours. **ADASYN:** generates more samples near hard (majority-dense) regions. **SMOTEENN:** SMOTE then Edited Nearest Neighbours removes noisy points from both classes.
+- **Your results (single split, minority class):** XGB+SMOTE F1 0.61 · XGB+ADASYN 0.62 · DT+SMOTEENN 0.61 · RF+SMOTEENN 0.63 · class-weighted models 0.62–0.64.
+- **Interpretation:** they all slide along the *same* precision-recall curve; resampling doesn't create information.
+- **Risk with this data:** features are one-hot dummies. SMOTE interpolates them into values like 0.37, which are not real customers; use `SMOTENC` or avoid synthesis.
+</details>
+
+---
+
+### 🟡 Q16. What is cost-sensitive learning, and why did weighting beat resampling for deployment?
+
+**Topic:** Imbalance strategy
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+You pass `sample_weight = 2.84` for churners (`4160/1465`), so each missed churner costs ~2.8× a false alarm in the training loss. Benefits: no synthetic rows, no resampling leakage risk, one line of code, and a model that stays deployable with a plain scikit-learn dependency.
+
+**Cost you must mention:** weighting shifts the *effective class prior* to ~50%, so raw output scores are **not calibrated to the real 26.5% churn rate** (see Q38). Resampling does the same.
+</details>
+
+---
+
+### 🔴 Q17. Where in the pipeline must resampling happen, and how would you do it inside cross-validation?
+
+**Topic:** Leakage
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+Resample **only the training portion**, *after* the split. Your notebook does this (SMOTEENN on `x_train`, test untouched) ✅.
+
+For CV, resampling must happen **inside each fold**:
+
 ```python
-bins = [0, 12, 24, 36, 48, 60, 72]
-labels = ['1-12', '13-24', '25-36', '37-48', '49-60', '61-72']
-df['tenure_bin'] = pd.cut(df['tenure'], bins=bins, labels=labels, include_lowest=True)
+from imblearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE
+pipe = Pipeline([("smote", SMOTE(random_state=42)), ("clf", XGBClassifier())])
+cross_val_score(pipe, X, y, cv=StratifiedKFold(5, shuffle=True, random_state=42), scoring="average_precision")
 ```
-Customer churn hazard rates are non-linear over time: the first 12 months represent the critical onboarding hazard window where churn is highest, whereas customers surviving past 48 months rarely churn. Discretization allows shallow models to capture this non-linear drop-off directly."
+
+Resampling before CV puts near-copies of validation rows in training and inflates scores.
 </details>
 
 ---
 
-### 🔹 Q14: What is the "Dummy Variable Trap", and why was `drop_first=True` specified in `pd.get_dummies`?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Categorical Encoding & Linear Dependency`
-- **Why Interviewers Ask This:** Tests fundamental mathematical understanding of linear algebra in encoding.
+### 🟡 Q18. Your `train_test_split` has no `random_state` and no `stratify`. Why does it matter?
+
+**Topic:** Evaluation rigour
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"When encoding a categorical variable with $K$ categories, creating $K$ binary columns introduces perfect multicollinearity because the $K$-th column is an exact linear combination of the other $K-1$ columns:
-$$\sum_{j=1}^K x_j = 1$$
-This makes the $(X^T X)$ matrix singular and non-invertible. Setting `drop_first=True` removes the baseline reference category, ensuring full rank. While tree models don't invert matrices, `drop_first=True` reduces dimensionality by 1 column per categorical feature without losing any information, cutting memory and split-evaluation latency."
+- **Not reproducible:** every run gives different numbers (README and notebook already disagree on several rows).
+- **Not stratified:** the test set's churn share drifts (396/1,409 vs 404/1,407 in two runs).
+- **Noise size:** with ≈374 positives in a 20% test set, recall has a standard error of $\sqrt{0.8 \cdot 0.2 / 374} \approx 0.02$ — a ±0.04 95% interval. Differences like 0.79 vs 0.82 are **not significant**. Over 10 seeds the deployed recipe gives recall 0.805 ± 0.015.
+
+**Fix:** `train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)` for the final hold-out, and `RepeatedStratifiedKFold(5, 3)` for model comparison.
 </details>
 
 ---
 
-### 🔹 Q15: How many final features were fed into the model after preprocessing?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Feature Dimensionality`
-- **Why Interviewers Ask This:** Verifies you know your pipeline dimensions inside and out.
+### 🔴 Q19. What is training-serving skew, and where is it in this repo?
+
+**Topic:** Production consistency
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Exactly **34 features**:
-- **3 continuous numerical features:** `SeniorCitizen`, `MonthlyCharges`, `TotalCharges`.
-- **26 binary dummy features:** Generated from categorical services, contract, and billing types (`Contract_One year`, `Contract_Two year`, `InternetService_Fiber optic`, etc.).
-- **5 tenure cohort dummies:** From `tenure_bin_13-24` through `tenure_bin_61-72` (`1-12` is the dropped baseline)."
+Training and inference must apply **identical, fitted** transformations.
+
+| Risk | Status in repo |
+| :--- | :--- |
+| Scaler fit on all data in the app vs train split in the notebook | ⚠️ present (small effect, see Q13) |
+| Preprocessing re-implemented by hand in `app.py` | ⚠️ duplicated logic can drift |
+| Column order / missing dummies | ✅ handled by `reindex(columns=template, fill_value=0)` |
+| `tenure = 0` unseen in training | ⚠️ out-of-distribution input |
+
+**Fix:** one `Pipeline(ColumnTransformer(...), model)` saved with `joblib`, plus a **parity test** that scores 100 held-out rows through both notebook and app code paths and asserts equal output.
 </details>
 
 ---
 
-### 🔹 Q16: Why was `StandardScaler` used? Does a tree-based model like AdaBoost strictly require feature scaling?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Feature Scaling & Model Invariance`
-- **Why Interviewers Ask This:** Tests whether you blindly scale features or understand algorithm-specific invariance.
+### 🟡 Q20. How does the app turn one customer into the 34-column vector?
+
+**Topic:** Inference pipeline
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Tree-based algorithms are **scale-invariant**—splits are based on rank order along individual feature dimensions, not Euclidean distance. Multiplying or scaling a feature by a constant does not change where a tree splits. `StandardScaler` was included in the notebook's baseline pipeline to enable fair, side-by-side benchmarking against distance-sensitive models (like Logistic Regression, SVM, and KNN) and to ensure numerical stability across continuous and binary features."
+1. Build a one-row DataFrame; bin `tenure` with the same bins; drop `tenure`.
+2. `pd.get_dummies(df_in)` **without** `drop_first` — with one row, `drop_first` would delete the only observed level.
+3. `reindex(columns=template_columns, fill_value=0)` — absent dummy levels become 0, which equals the dropped baseline level.
+4. `scaler.transform(...)` → `model.predict_proba(...)`.
+
+**Weakness:** this re-implements encoding by hand. `OneHotEncoder(drop="first", handle_unknown="ignore")` inside a `ColumnTransformer` gives the same result, serialised with the model.
 </details>
 
 ---
 
-### 🔹 Q17: What was the class imbalance ratio in this dataset, and why does accuracy completely fail as an evaluation metric?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Class Imbalance & Base Rate Fallacy`
-- **Why Interviewers Ask This:** Fundamental test of metric integrity under class skew.
+### 🟡 Q21. What encoding alternatives did you consider?
+
+**Topic:** Encoding
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"The dataset is imbalanced: **~73.4% non-churners (`No`)** and **~26.6% churners (`Yes`)**—a nearly 3:1 ratio.
-A dumb baseline model predicting 'No Churn' for 100% of subscribers scores **73.4% accuracy** while catching **0 actual churners** ($\text{Recall} = 0\%$). Accuracy rewards predicting the majority class; in churn modeling, business value comes entirely from identifying the 26.6% minority class."
+- **One-hot** (used): safe for low-cardinality features; all features here have ≤ 4 levels.
+- **Ordinal** for `Contract` (month-to-month < 1y < 2y) — compact and monotone.
+- **Target encoding:** powerful for high-cardinality columns but leaks unless computed out-of-fold; unnecessary here.
+- **Native categoricals** (CatBoost/LightGBM): you passed one-hot columns to CatBoost, which bypasses its main advantage (ordered target statistics).
+- Collapse `"No internet service"` into `"No"` plus an `has_internet` flag to remove redundancy.
 </details>
 
 ---
 
-### 🔹 Q18: Compare SMOTE, ADASYN, and SMOTEENN. What are their mechanics and trade-offs?
-- **Difficulty:** `Advanced`
-- **Topic:** `Synthetic Resampling Strategies`
-- **Why Interviewers Ask This:** Checks deep understanding of synthetic oversampling algorithms.
+### 🔴 Q22. What features would you add, and how would you prove they help?
+
+**Topic:** Feature engineering
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"- **SMOTE:** Synthesizes minority instances uniformly along line segments between $k$-nearest minority neighbors: $x_{\text{new}} = x_i + \lambda (\hat{x}_i - x_i)$.  
-  *Flaw:* Blindly creates synthetic points across noisy overlapping boundaries.
-- **ADASYN:** Adaptively creates more synthetic samples for minority points that are surrounded by majority-class neighbors (hard-to-learn boundaries).  
-  *Flaw:* Can heavily over-synthesize extreme outliers.
-- **SMOTEENN (Hybrid):** First applies SMOTE to oversample minority instances, then applies **Edited Nearest Neighbors (ENN)** to remove any instance whose class label disagrees with the majority of its 3 nearest neighbors.  
-  *Advantage:* Cleans messy decision boundaries, which is why SMOTEENN gave the highest F1 among resampling methods in our experiments."
+- `avg_monthly_spend = TotalCharges / max(tenure, 1)` and `price_change = MonthlyCharges − avg_monthly_spend` (recent price hikes).
+- `n_addons` (count of security/backup/protection/support) and `has_support`.
+- Explicit interactions: `fiber & no_support`, `month_to_month & e_check`.
+- With real data: usage trends, support-call counts, complaint tickets, bill shock, contract end-date proximity.
+
+**Proof:** add one feature at a time, compare **repeated-CV PR-AUC** (not in-sample importance), and keep it only if the gain exceeds the CV standard deviation (≈0.01).
+</details>
+
+---
+# Part 3 — Models, Math & Tuning (Q23–Q34)
+
+### 🟡 Q23. Show your benchmark. Why did AdaBoost win — and is that win real?
+
+**Topic:** Model selection · **Interviewer wants:** you can read your own results critically.
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+**Notebook results, minority class, one unseeded 80/20 split (n = 1,407):**
+
+| Model / imbalance strategy | Precision | Recall | F1 |
+| :--- | :---: | :---: | :---: |
+| Decision Tree (baseline) | 0.59 | 0.51 | 0.55 |
+| XGBoost (unweighted) | 0.61 | 0.53 | 0.57 |
+| XGBoost + SMOTE / + ADASYN | 0.62 / 0.63 | 0.61 / 0.61 | 0.61 / 0.62 |
+| XGBoost + `scale_pos_weight` | 0.57 | 0.68 | 0.62 |
+| Random Forest (balanced, depth 6) | 0.51 | 0.80 | 0.62 |
+| CatBoost (balanced) | 0.54 | 0.75 | 0.63 |
+| LightGBM (`scale_pos_weight`) | 0.55 | 0.77 | 0.64 |
+| XGBoost (RandomizedSearchCV) | 0.53 | 0.81 | 0.64 |
+| **AdaBoost (cost-weighted)** | **0.53** | **0.82** | **0.64** |
+
+**Honest reading:** every weighted/tuned model sits at F1 0.62–0.64, inside the ±0.02 noise of a 1,407-row test split (Q18). AdaBoost did not *beat* the others — it **tied** them while being the simplest to ship: one scikit-learn dependency, a 33 KB pickle, no C++ boosting runtime.
+
+**Better framing:** *"I chose it for operational simplicity at equal accuracy. Its weaknesses are poor probability calibration and additive-only structure; if calibrated probabilities mattered more, I'd pick a log-loss model."*
 </details>
 
 ---
 
-### 🔹 Q19: What is Cost-Sensitive Learning (Sample Weighting), and why is it often preferred over SMOTE in production?
-- **Difficulty:** `Advanced`
-- **Topic:** `Cost-Sensitive Learning vs. Resampling`
-- **Why Interviewers Ask This:** Key differentiator between junior and senior data scientists.
+### 🔴 Q24. Explain AdaBoost mathematically. What exactly did you deploy?
+
+**Topic:** Algorithms
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"Instead of synthesizing artificial rows, Cost-Sensitive Learning keeps the raw data untouched and modifies the loss function penalty during optimization:
+Start with equal sample weights $w_i$. For round $t$:
+
+1. Fit a weak learner $h_t$ on the weighted data; compute weighted error $\varepsilon_t = \sum_i w_i\,\mathbb{1}[h_t(x_i) \ne y_i]$.
+2. Learner weight: $\alpha_t = \tfrac{1}{2}\ln\frac{1-\varepsilon_t}{\varepsilon_t}$ (scikit-learn's discrete SAMME drops the ½).
+3. Re-weight: $w_i \leftarrow w_i \exp(\alpha_t \mathbb{1}[h_t(x_i)\ne y_i])$ and normalise — misclassified points matter more next round.
+4. Predict $H(x) = \operatorname{sign}\sum_t \alpha_t h_t(x)$.
+
+This is forward stagewise minimisation of the **exponential loss** $e^{-yF(x)}$.
+
+**What you deployed (read from the pickle):** 50 depth-1 stumps, `learning_rate=1.0`, `algorithm="SAMME.R"` (the real-valued variant that uses each stump's class probabilities), trained with `sample_weight` = 2.84 on churners. Only **17 of 34** features are ever used; `feature_importances_` moves in steps of 0.02 (= 1/50) because it is essentially a stump count — **18 stumps split on `TotalCharges`, 13 on `MonthlyCharges`**.
+
+**Why scores look like 0.47–0.52:** scikit-learn averages the stumps' contributions instead of summing them, so the final score concentrates near 0.5 (Q38). SAMME.R was deprecated in 1.4 and removed in 1.6, so a retrain on a newer version uses SAMME with a different score scale — **recalibrate and re-derive thresholds after any upgrade.**
+</details>
+
+---
+
+### 🟡 Q25. AdaBoost vs Gradient Boosting vs XGBoost — what's the difference?
+
+**Topic:** Boosting family
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+| | AdaBoost | Gradient Boosting | XGBoost |
+| :--- | :--- | :--- | :--- |
+| Mechanism | Re-weights samples | Fits the negative gradient of any differentiable loss | Same, with 2nd-order (Newton) steps |
+| Loss | Exponential | Log-loss, squared error, … | Log-loss etc. + L1/L2 + γ penalties |
+| Noise sensitivity | **High** (exponential loss punishes mislabelled points) | Moderate | Lower (shrinkage, subsampling, regularisation) |
+| Probabilities | Poorly calibrated | Reasonable | Reasonable |
+
+AdaBoost is gradient boosting with exponential loss (Friedman). Churn labels are noisy (people leave for reasons not in the data), which is one reason AdaBoost needed shallow stumps here.
+</details>
+
+---
+
+### 🔴 Q26. Stumps are depth-1. Can your model learn interactions like "fiber + no tech support"?
+
+**Topic:** Model capacity · **Interviewer wants:** a precise answer, not "it models complex boundaries".
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+**No — not directly.** A sum of single-feature stumps is an **additive model**, $F(x)=\sum_j f_j(x_j)$ (a GAM-like structure). It only captures the fiber × no-support effect (49.4% vs 22.6% churn) *additively*, through the correlated one-hot columns.
+
+**Check it, don't assume it** (repeated 5×3 stratified CV on the same 34 features):
+
+| Model | ROC-AUC | PR-AUC |
+| :--- | :---: | :---: |
+| AdaBoost, depth-1 stumps ×50 | 0.844 | 0.659 |
+| AdaBoost, **depth-2** trees ×50 | 0.822 | 0.613 |
+| Gradient Boosting, depth 3 ×200 | 0.846 | 0.663 |
+
+**Conclusion:** interactions add essentially nothing here (deeper AdaBoost overfits; gradient boosting gains +0.002). The dataset is close to additive — which is also why logistic regression keeps up (Q29). Optuna independently chose `max_depth = 3`, the low end of its range.
+</details>
+
+---
+
+### 🔴 Q27. How does XGBoost use a second-order Taylor expansion?
+
+**Topic:** Algorithms
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+For round $t$ it approximates the loss around the current prediction:
+
+$$\mathcal{L}^{(t)} \approx \sum_i \Big[g_i f_t(x_i) + \tfrac12 h_i f_t(x_i)^2\Big] + \Omega(f_t),\quad g_i=\partial_{\hat y}\ell,\; h_i=\partial^2_{\hat y}\ell$$
+
+For log-loss: $g_i = p_i - y_i$, $h_i = p_i(1-p_i)$. With $G=\sum g_i$, $H=\sum h_i$ in a leaf, the optimal leaf value is $w^*=-\dfrac{G}{H+\lambda}$ and a split's gain is
+
+$$\tfrac12\left[\frac{G_L^2}{H_L+\lambda}+\frac{G_R^2}{H_R+\lambda}-\frac{(G_L+G_R)^2}{H_L+H_R+\lambda}\right]-\gamma .$$
+
+$\lambda$ shrinks leaf values, $\gamma$ is the minimum gain to split, and `min_child_weight` is a floor on $H$ — which is why your Optuna result (`min_child_weight=10`, `reg_alpha≈0.9`) means "regularise heavily".
+</details>
+
+---
+
+### 🟡 Q28. LightGBM and CatBoost — what do they change, and did you use them well?
+
+**Topic:** Boosting libraries
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- **LightGBM:** histogram binning, **leaf-wise** growth, GOSS (keep large-gradient rows) and EFB (bundle exclusive sparse features). Faster, but leaf-wise trees overfit small data without `min_data_in_leaf`/`num_leaves` limits.
+- **CatBoost:** symmetric (oblivious) trees, **ordered boosting** and ordered target statistics to avoid prediction shift when handling categoricals.
+- **Your usage:** LightGBM F1 0.64 / recall 0.77; CatBoost F1 0.63 / recall 0.75 — both with default-ish settings. CatBoost was fed one-hot dummies, which sidesteps its categorical engine; pass raw categoricals with `cat_features=[...]` to test its real strength. With 7k rows and ≤ 4 levels per column, expect no major gain.
+</details>
+
+---
+
+### 🔴 Q29. Where's your logistic-regression baseline? Do you even need boosting?
+
+**Topic:** Baselines · **Interviewer wants:** humility and evidence.
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+The notebook skips it — a gap worth admitting. A repeated-CV re-run (5 folds × 3 repeats, same 34 features):
+
+| Model | ROC-AUC | PR-AUC | Brier |
+| :--- | :---: | :---: | :---: |
+| Logistic regression (L2, unweighted) | 0.843 ± 0.010 | 0.649 | **0.137** |
+| AdaBoost stumps | 0.844 ± 0.010 | 0.659 | 0.241 |
+| Gradient boosting | 0.846 ± 0.010 | 0.663 | **0.135** |
+
+**Takeaways:** (1) ranking quality is *saturated* near 0.84 — differences are inside one standard deviation; (2) the AdaBoost Brier score is worse than predicting the base rate (0.195), while logistic regression and gradient boosting are well-calibrated; (3) logistic regression adds coefficient-level interpretability (odds ratios).
+
+**Mature answer:** *"Given equal AUC, I'd now ship calibrated logistic regression or gradient boosting with a threshold from cost. AdaBoost won on my original single-split F1, which is within noise."*
+</details>
+
+---
+
+### 🟡 Q30. How did you tune hyperparameters? Compare RandomizedSearchCV and Optuna.
+
+**Topic:** Hyperparameter optimisation
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- **RandomizedSearchCV:** 50 random draws from a discrete grid, 5-fold CV, `scoring="f1"` → best CV F1 **0.630** (`max_depth=4, lr=0.01, n_estimators=400, scale_pos_weight=2.84`).
+- **Optuna (TPE):** 100 trials over continuous/log-uniform ranges → best CV F1 **0.6335** (`max_depth=3, lr≈0.017, n_estimators=627`).
+- **TPE idea:** split past trials at a quantile $y^*$ into good/bad, model $\ell(x)=p(x\mid y<y^*)$ and $g(x)=p(x\mid y\ge y^*)$, and propose the $x$ maximising $\ell(x)/g(x)$ (proportional to expected improvement). The first ~10 trials are random; later trials exploit what worked.
+
+**Gap:** the 0.003 CV-F1 difference is far smaller than the fold-to-fold spread (~0.02), so neither method is "better" here.
+</details>
+
+---
+
+### 🔴 Q31. What could go wrong in your Optuna study?
+
+**Topic:** Tuning pitfalls
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+1. **Search-space edges:** the best `min_child_weight` is **10 — the upper bound** — and `reg_alpha ≈ 0.91` is near its bound of 1. The optimum is likely outside the range; widen it.
+2. **Reproducibility:** `XGBClassifier(**study.best_params)` omits `random_state=42` and `eval_metric` because they were fixed, not tuned.
+3. **Winner's curse / multiple comparisons:** after 100 trials the best CV score is optimistically biased. Use **nested CV** or a final untouched hold-out.
+4. **Metric choice:** optimising F1 at a fixed 0.5 cut-off ignores the threshold and the business cost; optimise PR-AUC or expected profit instead.
+5. **Unused pruning:** Optuna pruners (`MedianPruner`) could cut compute on bad trials.
+6. **Leakage:** tuning ran on `x_train` only ✅ — good — but model *selection* later used the test set (audit #2).
+</details>
+
+---
+
+### 🟡 Q32. How do you control overfitting in boosting? What is early stopping?
+
+**Topic:** Regularisation
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+Levers: small learning rate with more trees, shallow depth, `min_child_weight`, `gamma`, L1/L2, row/column subsampling, and **early stopping** — monitor a validation metric and stop when it hasn't improved for *k* rounds, so `n_estimators` is learned rather than guessed.
+
+**In this repo:** Optuna fixed 627 trees at `lr≈0.017` without early stopping — a lower-variance choice would be `n_estimators=2000` with `early_stopping_rounds=50` on a validation fold. For AdaBoost, `learning_rate < 1` plus fewer stumps plays the same role; yours uses `learning_rate=1.0`.
+
+**Diagnostic:** plot train vs validation loss against rounds; a widening gap means overfitting.
+</details>
+
+---
+
+### 🔴 Q33. How would you prove model A is really better than model B?
+
+**Topic:** Statistical rigour
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- Use **repeated stratified k-fold** with *identical folds* for both models, then a **paired** test on the per-fold scores (or a bootstrap CI on the difference).
+- For AUC use DeLong or bootstrap; for paired predictions at one threshold use **McNemar**.
+- Tuning claims need **nested CV** (inner loop tunes, outer loop evaluates).
+- Rule of thumb from your data: SE of recall ≈ 0.02 on a 1,407-row split and AUC std ≈ 0.01 across folds, so gaps < 0.02 are indistinguishable.
+
+**Say:** *"I'd only call a model better if the paired CI excludes zero and the gain matters in dollars."*
+</details>
+
+---
+
+### 🟡 Q34. Random Forest vs boosting — bias, variance and your results.
+
+**Topic:** Ensembles
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- **Bagging (RF):** averages many deep, decorrelated trees → mostly **variance** reduction.
+- **Boosting:** adds shallow learners sequentially → mostly **bias** reduction.
+- **Your numbers:** RF (`class_weight="balanced"`, depth 6, 300 trees) → precision 0.51 / recall 0.80 / F1 0.62; RF + SMOTEENN (500 trees) → 0.51 / 0.82 / 0.63. Comparable to boosting.
+- **Doc inconsistency to fix:** the README table lists RF as 0.59 / 0.65 / 0.54 — it does not match the notebook output above (audit #10).
+- RF probabilities are the average of leaf frequencies and are usually better calibrated than AdaBoost's, but still benefit from calibration.
+</details>
+
+---
+
+# Part 4 — Evaluation, Calibration, Explainability & Business (Q35–Q42)
+
+### 🟡 Q35. Read your confusion matrix and put a price on each cell.
+
+**Topic:** Metrics → money
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+Notebook (n = 1,407): **TN 706 · FP 297 · FN 71 · TP 333**.
+
+- Recall = 333 / 404 = **0.82** (we reach 82% of churners).
+- Precision = 333 / 630 = **0.53** (about half of the people we contact would have stayed anyway).
+- Specificity = 706 / 1,003 = 0.70.
+
+| Cell | Cost |
+| :--- | :--- |
+| **FN** (missed churner) | lose customer value or replacement cost (app assumes $1,200) |
+| **FP** (needless offer) | offer cost + possible discount leakage (e.g. $50) |
+| **TP** | offer cost, but customer saved with probability *s* |
+
+With FN ≫ FP the weighted model's low precision is acceptable. State this *before* the interviewer asks "why is precision only 53%?"
+</details>
+
+---
+
+### 🟡 Q36. PR-AUC vs ROC-AUC — which do you report, and what do your numbers say?
+
+**Topic:** Metrics
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- **ROC-AUC** = probability a random churner outranks a random non-churner; insensitive to prevalence, so it looks flattering under imbalance.
+- **PR-AUC** (average precision) is anchored to prevalence — the no-skill baseline is **0.265** — and directly reflects the precision you'll get when contacting customers.
+- **Re-run (10 stratified seeds):** ROC-AUC **0.844 ± 0.008**, PR-AUC **0.656 ± 0.012** (2.5× the baseline).
+
+**Note on the app:** the sidebar's ROC-AUC 0.842 is plausible and reproducible; its "81.2% accuracy" is not (≈74.6% for the weighted model). Metrics shown in a UI should be loaded from a stored evaluation artifact.
+</details>
+
+---
+
+### 🔴 Q37. How do you pick the threshold? Derive it from costs.
+
+**Topic:** Decision theory
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+For a **calibrated** probability $p$, contact the customer if the expected gain is positive:
+
+$$p\cdot s\cdot V - c > 0 \;\Longrightarrow\; p > \frac{c}{s\,V}.$$
+
+With $c=\$50$, $s=0.30$, $V=\$1{,}200$ the cut-off is $\approx 14\%$. If you ignore $s$ and treat it as pure cost-sensitive classification, the cut-off is $t^*=\dfrac{C_{FP}}{C_{FP}+C_{FN}}$.
+
+**Practical recipe:** (1) calibrate; (2) sweep thresholds on a validation set; (3) maximise expected profit subject to a **campaign capacity** (e.g. call centre can handle top 10% only); (4) re-check after every retrain.
+
+**Warning:** this only works if scores are probabilities. A cut-off of 0.45/0.50 on the deployed raw scores is an *ad-hoc* rank cut, not a cost-optimal rule (Q38).
+</details>
+
+---
+
+### 🔴 Q38. Are the app's "churn probabilities" real probabilities?
+
+**Topic:** Calibration · **Interviewer wants:** you noticed. This is the most valuable question in the guide.
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+**No.** Run the deployed pickle exactly as `app.py` does:
+
+- The three built-in personas score **51.1%** (high-risk), **50.0%** (moderate) and **48.0%** (loyal).
+- Across all customers the 1st–99th percentile of scores is only **0.474–0.515**.
+- Brier score 0.244 vs 0.195 for a constant 26.5% forecast.
+
+Yet the **ranking is strong** (held-out, 5 score quintiles):
+
+| Score range | n | Mean score | Observed churn |
+| :--- | :---: | :---: | :---: |
+| 0.31 – 0.486 | 282 | 0.480 | **0.7%** |
+| 0.486 – 0.494 | 281 | 0.490 | 7.1% |
+| 0.494 – 0.500 | 281 | 0.497 | 19.2% |
+| 0.500 – 0.505 | 281 | 0.503 | 39.9% |
+| 0.505 – 0.520 | 282 | 0.509 | **66.0%** |
+
+The top quintile has 2.5× lift and ≈50% of all churners; the top two quintiles hold ≈80%.
+
+**Consequences in the app:** "Moderate Risk (45–50%)" actually churns at ~9%, not "significantly above the 26.5% baseline"; the README's 35%/60% tiers can never trigger; "+24.6% vs baseline" for a 51% score is meaningless.
+
+**Fix:** wrap the model in `CalibratedClassifierCV(method="isotonic", cv=5)` (or `"sigmoid"` for small data), check a reliability curve and Brier score, derive tiers from calibrated probabilities and expected cost — or ship logistic regression / gradient boosting, which are calibrated out of the box (Brier ≈ 0.135).
+</details>
+
+---
+
+### 🔴 Q39. How do you explain a prediction? Is the app's feature chart an explanation?
+
+**Topic:** Explainability
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+**The app's chart is static**: a hard-coded copy of the model's global importances (`TotalCharges` 0.36, `MonthlyCharges` 0.26, contracts 0.06 each, …) identical for every customer. The retention playbook below it is rule-based (`if Contract == "Month-to-month": …`), not model-derived.
+
+**Better:**
+- **SHAP** — additive per-feature contributions that sum to the prediction (Shapley values: fair credit allocation). Use `TreeExplainer` for XGBoost/GBM; the model-agnostic permutation/kernel explainers work for AdaBoost.
+- **Why not impurity importance?** It is biased toward continuous/high-cardinality features: `TotalCharges` + `MonthlyCharges` hold 62% simply because they offer more split points. Compare with **permutation importance** on held-out data.
+- For linear models, coefficients/odds ratios give global *and* local explanations for free.
+</details>
+
+---
+
+### 🟡 Q40. What drives churn, and which findings are actionable versus just correlation?
+
+**Topic:** Insight → action
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- **Drivers:** contract type, tenure, price level (monthly charges), fiber without support, electronic-check payment.
+- **Actionable levers:** term-contract incentives, autopay credits, bundling tech support/security, onboarding calls in months 1–12.
+- **Correlation trap:** *"Eliminate month-to-month contracts"* would not remove the *kind of customer* who chooses month-to-month (price-sensitive, uncertain). Treat features as risk markers, not causes.
+- Only **randomised experiments** (Q41) tell you whether an incentive changes behaviour.
+</details>
+
+---
+
+### 🔴 Q41. What is uplift modelling, and how would you validate retention ROI?
+
+**Topic:** Causal ML
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+A churn model finds *who will leave*; an **uplift model** finds *whom a treatment will change*. Customers fall into four groups: **persuadables** (target), sure things, lost causes, and *sleeping dogs* (contact makes them leave).
+
+- **Data:** randomised treated/control campaign. **Models:** two-model (T-learner), S-learner, or causal forests; **metrics:** Qini curve / AUUC.
+- **Feedback-loop fix:** keep a 5–10% **universal holdout** that gets no offer. It gives (a) clean labels for retraining — otherwise saved customers are labelled "stayed" and the model unlearns the risk signal — and (b) the true campaign ROI.
+</details>
+
+---
+
+### 🟡 Q42. Fairness, privacy and compliance — anything to worry about?
+
+**Topic:** Responsible ML
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- **Protected/proxy attributes:** `gender` and `SeniorCitizen` (age) are inputs. Churn risk differing by age is not itself unlawful, but offering better deals only to high-risk groups can create **disparate impact**. Audit error rates and selection rates by group (equal opportunity, demographic parity gap); consider dropping `gender`.
+- **Privacy:** real billing data is personal data — minimise columns, restrict access, log predictions without raw PII, define retention.
+- **Transparency:** if decisions affect pricing or service, keep reason codes (SHAP) available.
+- **Repo hygiene:** the public dataset is anonymised sample data; never commit real customer files.
+</details>
+
+---
+# Part 5 — Production, MLOps & System Design (Q43–Q50)
+
+### 🟡 Q43. Is pickling the model safe? How do you version and pin it?
+
+**Topic:** Model artifacts
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- **Version coupling:** the pickle was written by scikit-learn **1.5.0**, but `requirements.txt` allows `>=1.4.0,<1.6.0`. Loading it under 1.5.2 prints one "Trying to unpickle estimator … from version 1.5.0 when using version 1.5.2" warning *per tree* (51 in total). Pin the exact version: `scikit-learn==1.5.0`, and use the same Python/NumPy in Docker, Streamlit Cloud and CI.
+- **Security:** `joblib.load` / `pickle.load` can execute arbitrary code. Only load artifacts you built; never load user-supplied files; verify a `sha256` checksum in CI.
+- **Safer or portable formats:** `skops.io` (restricted types), ONNX (`skl2onnx`) for cross-language serving, or a model registry (MLflow) with metadata.
+- **Always store beside the model:** training sklearn version, git SHA, data hash, feature list, evaluation metrics, decision threshold — in a `model_card.json`.
+</details>
+
+---
+
+### 🟡 Q44. Explain Streamlit's execution model and the caching in `app.py`.
+
+**Topic:** App architecture
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- Streamlit **re-runs the whole script** on every widget interaction.
+- `@st.cache_data` caches *serialisable* results and returns a copy — right for the CSV.
+- `@st.cache_resource` caches *global* objects (models, connections) shared across **all sessions and threads** — so they must be treated as read-only.
+- **Improvements for this app:**
+  1. `build_preprocessor(df)` takes a DataFrame argument, so Streamlit hashes it on every rerun; use `_df` to skip hashing or build it inside `load_data`.
+  2. The results panel is guarded by `if predict_clicked:`; touching *any* widget re-runs the script with the button back to `False`, so the report vanishes. Store the result in `st.session_state`.
+  3. Heavy work runs only on click ✅ — keep it that way.
+</details>
+
+---
+
+### 🔴 Q45. Walk me through your Dockerfile's security and caching — and what would you still change?
+
+**Topic:** Containers
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+**Already good:** `python:3.11-slim`, non-root `appuser` (UID 10001), `requirements.txt` copied before code (dependency layer cached), `PYTHONDONTWRITEBYTECODE`, `HEALTHCHECK` on `/_stcore/health`, `.dockerignore` excludes notebooks and secrets.
+
+**Be ready to admit and fix:**
+- It is **single-stage**; the README calls it "multi-stage". A multi-stage build only pays off if you compile wheels — otherwise say "slim, single-stage".
+- `COPY . .` also ships `presentation/` (PPTX + PDF), `production/`, `Interview Questions/` and two unused model pickles → use explicit `COPY app.py Data/ Models/Ada_boost_churn_model.pkl`.
+- `useradd -s /bin/bash` → use `/usr/sbin/nologin`; healthcheck can use Python's `urllib` and drop `curl` to shrink the attack surface.
+- Pin the base image by **digest**, scan with Trivy / Docker Scout, tag images with the git SHA (not only `latest`).
+- Runtime flags: `--read-only --tmpfs /tmp --cap-drop=ALL --security-opt no-new-privileges:true --memory 1g`.
+
+Layer cache in one line: Docker reuses a layer if its instruction and all inputs are unchanged, so rarely-changing steps go first.
+</details>
+
+---
+
+### 🔴 Q46. Streamlit Cloud, EC2, ECS Fargate — how do you choose where to deploy?
+
+**Topic:** Deployment architecture
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+| Option | Best for | Watch out |
+| :--- | :--- | :--- |
+| **Streamlit Community Cloud** | Free portfolio demo, GitHub push-to-deploy | Apps with no traffic for 12 hours hibernate; resource limits can change without notice |
+| **Docker on one VM (EC2 + Nginx + Certbot)** | Cheap, full control | You patch the OS, handle TLS renewal and restarts; Nginx must forward WebSocket upgrade headers |
+| **ECS on Fargate + ALB** | Production, HA, autoscaling | More moving parts; enable ALB **sticky sessions** with >1 task because Streamlit holds session state over a WebSocket |
+| **ECS Express Mode** | Fastest managed path on AWS — provisions Fargate, ALB/HTTPS and scaling from an image and two IAM roles | Newer; still verify health-check path and port |
+| ~~AWS App Runner~~ | — | **Closed to new customers since 30 Apr 2026** (existing customers unaffected); AWS points to ECS Express Mode |
+
+**Rule:** demo → Streamlit Cloud; internal tool → one VM or Express Mode; customer-facing → Fargate/ALB with private subnets, WAF, alarms. Detailed runbooks live in [`production/`](../production/).
+</details>
+
+---
+
+### 🔴 Q47. How do you monitor this model after launch when churn labels arrive 1–3 months late?
+
+**Topic:** Drift & monitoring
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+1. **Data/feature drift (immediate):** per-feature PSI (rule of thumb: < 0.1 stable, 0.1–0.25 watch, > 0.25 act), KS test for numeric, χ² for categorical; also schema/range checks and null rates.
+2. **Prediction drift (immediate):** monitor *rank-based* statistics — share of customers in the top decile, score quantiles. Because raw AdaBoost scores live in a 0.47–0.52 band (Q38), absolute-threshold alerts are meaningless until calibrated.
+3. **Performance (delayed):** once outcomes mature, compute recall/precision/lift **per scoring cohort**; compare with the training baseline (recall ≈ 0.80, PR-AUC ≈ 0.66).
+4. **Business KPIs:** save rate, campaign ROI, holdout churn.
+5. **Concept drift triggers:** new pricing, competitor launches, network incidents. **Tools:** Evidently, WhyLogs, Prometheus + Grafana, CloudWatch alarms.
+</details>
+
+---
+
+### 🔴 Q48. How do you retrain and release a new version safely?
+
+**Topic:** MLOps lifecycle
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+- **Triggers:** schedule (monthly/quarterly) *plus* drift or performance alerts.
+- **Gate:** the challenger must beat the champion on a fixed validation set with a **paired CI** (Q33) *and* pass calibration/Brier checks, a parity test (Q49) and a latency budget.
+- **Rollout:** shadow mode (score, don't act) → canary (5–10% traffic) → full; roll back by redeploying the previous image tag.
+- **Feedback loop:** keep the universal holdout (Q41) so retraining labels aren't contaminated by retention actions.
+- **Reproducibility:** seed everything, version data (DVC/hash), log runs to MLflow, and write the metrics file the app reads (replacing hard-coded sidebar numbers).
+</details>
+
+---
+
+### 🟡 Q49. How would you test and CI/CD this project?
+
+**Topic:** Software quality for ML
+
+<details>
+<summary><b>💡 Answer & tips</b></summary>
+
+**Unit tests (pytest)** for the pieces that silently break: tenure bin edges (`0 → "1-12"`, `12 → "1-12"`, `13 → "13-24"`), output shape `(1, 34)`, unseen category → error, month-to-month scores above two-year for otherwise identical customers, and a **parity test** (notebook pipeline vs app pipeline on 100 held-out rows).
+
 ```python
-neg_count = (y_train == 0).sum()
-pos_count = (y_train == 1).sum()
-weight_for_positive = neg_count / pos_count  # ~ 73.4 / 26.6 ≈ 2.76
-
-sample_weight = np.where(y_train == 1, weight_for_positive, 1.0)
-model_ada_weighted.fit(x_train, y_train, sample_weight=sample_weight)
+def test_tenure_bins():
+    from app import preprocess_input  # refactor pure functions out of Streamlit
+    x, _ = preprocess_input(sample(tenure=12), prep)
+    assert x.shape == (1, 34)
 ```
 
-#### Why it's preferred in production:
-1. **No Synthetic Artifacts:** SMOTE interpolates continuous values between binary $0$ and $1$, creating nonsensical fractional dummy variables (e.g., $0.42$).
-2. **Zero Deployment Footprint:** No extra dependencies like `imbalanced-learn` needed at serving time.
-3. **Speed & Memory:** Trains on the original 5,600 training samples rather than an inflated 10,000+ synthetic dataset."
+**GitHub Actions:** lint (ruff) → tests → `docker build` → Trivy scan → push to ECR with **OIDC** (no stored AWS keys) → deploy. Add `pre-commit`, pinned requirements and a model-card check.
 </details>
 
 ---
 
-### 🔹 Q20: What is Data Leakage in resampling, and where must SMOTE be executed relative to Train/Test Split and Cross-Validation?
-- **Difficulty:** `Advanced`
-- **Topic:** `Data Leakage & Cross-Validation Hygiene`
-- **Why Interviewers Ask This:** Checks if you know how to prevent subtle test contamination.
+### 🔴 Q50. How would you evolve this prototype into an enterprise service?
+
+**Topic:** System design
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Answer & tips</b></summary>
 
-#### Direct Verbal Answer
-"1. **Never apply SMOTE before `train_test_split`:** If applied globally, synthetic minority points generated from test-set neighbors leak into the training set, causing massive optimistic bias in test metrics.
-2. **Never apply SMOTE before Cross-Validation splitting:** Resampling must happen **strictly inside each training fold** (e.g., using `imblearn.pipeline.Pipeline`). If you resample before K-Fold partitioning, synthetic points derived from validation fold instances will exist in the training folds."
+**First ask:** *real-time or batch?* Churn outreach is usually **weekly batch** — real-time scoring is only needed for agent-assist during a live call.
+
+- **Batch path:** warehouse → feature job → scoring job (Spark/Ray or plain pandas) → write scores to CRM. The model scores **10,000 rows in ≈ 60 ms** (≈ 0.006 ms/row) on a laptop-class CPU.
+- **Online path:** FastAPI + Pydantic validation, `/predict` and `/health`, model loaded once per worker, autoscaled behind a load balancer. A single-row call measures **≈ 4.6 ms p50 (model only)** — so the app's "sub-millisecond" caption is inaccurate; measure p50/p95 with a load test.
+- **Platform:** feature store for point-in-time features, model registry, drift monitors, A/B holdout, audit log of scores.
+- **Security:** authentication, rate limits, TLS, secrets in AWS Secrets Manager, least-privilege IAM, no PII in logs.
+- **Separation of concerns:** UI (Streamlit) ↔ API ↔ model service, so each scales and deploys independently.
 </details>
 
 ---
 
-### 🔹 Q21: In the modeling notebook, `train_test_split` was called multiple times without a `random_state`. Why is this a serious issue?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Reproducibility`
-- **Why Interviewers Ask This:** Tests your commitment to reproducible science.
+# ⚡ Rapid-Fire Round
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 25 one-line answers to practise out loud</b></summary>
 
-#### Direct Verbal Answer
-"Every time the notebook or script runs, a different random seed splits the data. Reported metrics fluctuate due to random sampling variance rather than real model improvements. Furthermore, cells comparing Decision Trees, AdaBoost, and XGBoost may evaluate against different test subsets, invalidating the benchmark comparison. Setting a fixed `random_state=42` guarantees 100% reproducible splits."
+1. **Churn rate?** 26.54% (1,869 of 7,043).
+2. **Why not accuracy?** "Always No" already scores 73.4%.
+3. **Blank `TotalCharges`?** 11 rows, all `tenure = 0`; coerced and dropped.
+4. **Features after encoding?** 34.
+5. **Why `drop_first`?** Avoid perfectly collinear dummies; harmless for trees.
+6. **Deployed model?** AdaBoost, 50 stumps, `sample_weight = 2.84`.
+7. **Recall / precision?** ≈ 0.80 / 0.51 (10-seed re-run); 0.82 / 0.53 on the notebook split.
+8. **ROC-AUC?** 0.844 ± 0.008.
+9. **Is 0.64 vs 0.63 F1 a real difference?** No — noise is ±0.02.
+10. **Does AdaBoost need scaling?** No.
+11. **Can stumps model interactions?** No — additive; depth-2 AdaBoost was *worse* (AUC 0.822).
+12. **Are the scores probabilities?** No; they sit in 0.47–0.52 and need calibration.
+13. **Best simple baseline?** Logistic regression — AUC 0.843, Brier 0.137.
+14. **Threshold rule?** Contact if $p > c/(sV)$ using calibrated $p$.
+15. **SMOTE risk here?** Interpolating one-hot dummies yields non-real customers.
+16. **Where to resample?** After the split, inside each CV fold.
+17. **Top churn driver?** Contract type (42.7% vs 2.8%), then tenure.
+18. **Fiber without support?** 49.4% churn vs 22.6% with support.
+19. **Static feature chart?** Global importance, not per-customer.
+20. **Pickle risk?** Arbitrary code execution; pin versions, checksum, prefer skops/ONNX.
+21. **Docker security?** Non-root user, health check, slim base, read-only FS, capability drop.
+22. **Streamlit Cloud sleep?** After 12 hours without traffic.
+23. **App Runner?** Closed to new customers since 30 Apr 2026 → ECS Express Mode.
+24. **Feedback loop fix?** Universal holdout group.
+25. **Biggest next step?** Calibrated model + Pipeline artifact + parity tests.
 </details>
 
 ---
 
-### 🔹 Q22: When receiving a single customer payload in production, how do you prevent missing dummy columns?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Inference Engineering`
-- **Why Interviewers Ask This:** Tests your ability to handle single-row schema alignment during live serving.
+# 🧪 Reproduce the Audit Numbers
 
 <details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
+<summary><b>💡 Script that regenerates the re-run metrics (scikit-learn 1.5.x)</b></summary>
 
-#### Direct Verbal Answer
-"Calling `pd.get_dummies()` on a single 1-row input dictionary will only create dummy columns for the specific categories present in that single customer. If they have `InternetService = 'DSL'`, no column for `'InternetService_Fiber optic'` is created.
-We solve this by reindexing against the exact 34 template columns captured during training:
 ```python
-df_in_enc = pd.get_dummies(df_in, drop_first=True)
-df_aligned = df_in_enc.reindex(columns=template_columns, fill_value=0)
+import warnings; warnings.filterwarnings("ignore")
+import numpy as np, pandas as pd
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.metrics import (roc_auc_score, average_precision_score, brier_score_loss,
+                             recall_score, precision_score, f1_score, accuracy_score)
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+df = pd.read_csv("Data/Customer-Churn.csv")
+df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+df = df.dropna()
+df["tenure_bin"] = pd.cut(df["tenure"], [0, 12, 24, 36, 48, 60, 72],
+                          labels=["1-12", "13-24", "25-36", "37-48", "49-60", "61-72"], include_lowest=True)
+y = (df["Churn"] == "Yes").astype(int)
+X = pd.get_dummies(df.drop(columns=["customerID", "Churn", "tenure"]), drop_first=True)
+
+rows = []
+for seed in range(10):
+    Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, stratify=y, random_state=seed)
+    sc = StandardScaler().fit(Xtr)
+    w = np.where(ytr == 1, (ytr == 0).sum() / (ytr == 1).sum(), 1.0)
+    clf = AdaBoostClassifier(n_estimators=50, random_state=42).fit(sc.transform(Xtr), ytr, sample_weight=w)
+    p = clf.predict_proba(sc.transform(Xte))[:, 1]; pred = (p >= 0.5).astype(int)
+    rows.append([accuracy_score(yte, pred), roc_auc_score(yte, p), average_precision_score(yte, p),
+                 recall_score(yte, pred), precision_score(yte, pred), f1_score(yte, pred), brier_score_loss(yte, p)])
+
+print(pd.DataFrame(rows, columns=["acc", "roc_auc", "pr_auc", "recall", "precision", "f1", "brier"])
+      .agg(["mean", "std"]).round(3))
 ```
-This guarantees the output matrix has shape `(1, 34)` with zeros in all absent categories."
 </details>
 
 ---
 
-## Part 3: Algorithms, Math & Hyperparameter Tuning (Q23–Q34)
-
-### 🔹 Q23: Explain the core mathematical intuition of AdaBoost (Adaptive Boosting). How does it learn?
-- **Difficulty:** `Advanced`
-- **Topic:** `AdaBoost Mechanics`
-- **Why Interviewers Ask This:** Tests foundational understanding of ensemble boosting.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"AdaBoost trains a sequence of weak learners—typically 1-split decision tree stumps (`max_depth=1`).
-1. It initializes all sample weights equally: $w_i = \frac{1}{N}$.
-2. In each iteration $m$:
-   - It fits a stump $h_m(x)$ minimizing weighted classification error $\epsilon_m$.
-   - It computes the learner's voting power:
-     $$\alpha_m = \frac{1}{2} \ln\left( \frac{1 - \epsilon_m}{\epsilon_m} \right)$$
-   - It updates sample weights: **increasing weights of misclassified samples** by $e^{\alpha_m}$ and **decreasing weights of correct samples** by $e^{-\alpha_m}$.
-3. The final prediction is a weighted majority vote across all stumps:
-   $$H(x) = \text{sign}\left( \sum_{m=1}^M \alpha_m h_m(x) \right)$$
-It converts a committee of weak decision stumps into a strong, non-linear classifier."
-</details>
-
----
-
-### 🔹 Q24: What is the fundamental difference between AdaBoost and Gradient Boosting (XGBoost / LightGBM)?
-- **Difficulty:** `Advanced`
-- **Topic:** `Boosting Paradigms`
-- **Why Interviewers Ask This:** Tests ability to compare boosting families at the loss-optimization level.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"The difference is **what the next tree fits against**:
-- **AdaBoost:** Operates in the **sample-weight space**. Each new tree fits the original labels $y$, but the training samples are reweighted so the tree focuses on hard-to-classify samples. It is mathematically constrained to exponential loss.
-- **Gradient Boosting:** Operates in the **gradient space**. Each new tree fits the **pseudo-residuals (negative gradient)** of the loss function from preceding trees:
-  $$r_{im} = -\left[ \frac{\partial L(y_i, f(x_i))}{\partial f(x_i)} \right]$$
-  This generalizes boosting to any differentiable loss (LogLoss, Mean Squared Error, Poisson counts)."
-</details>
-
----
-
-### 🔹 Q25: Why did you deploy the cost-weighted AdaBoost model over the Optuna-tuned XGBoost model in production?
-- **Difficulty:** `Advanced`
-- **Topic:** `Model Selection Trade-Offs`
-- **Why Interviewers Ask This:** Core question evaluating engineering maturity vs. blind metric chasing.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"In our experiments, the Optuna-tuned XGBoost model achieved a test F1 of 0.634 and recall of 0.79. The cost-weighted AdaBoost model achieved test F1 of 0.641 and recall of 0.82.
-Given metric parity, I chose AdaBoost based on three production criteria:
-1. **Operational Footprint:** AdaBoost runs natively in `scikit-learn`, requiring no external C++ binaries, OpenMP libraries, or GPU drivers.
-2. **Sub-millisecond Latency:** Evaluating 50 shallow decision tree stumps takes microseconds, consuming minimal memory during concurrent web traffic.
-3. **Simplicity & Maintainability:** In enterprise ML, the model with the lowest operational complexity that meets performance criteria is always the superior choice."
-</details>
-
----
-
-### 🔹 Q26: What is a decision stump, and how can a collection of 1-split stumps model complex non-linear churn boundaries?
-- **Difficulty:** `Advanced`
-- **Topic:** `Weak Learners & Non-Linearity`
-- **Why Interviewers Ask This:** Tests intuitive understanding of piecewise approximations.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"A decision stump is a decision tree with `max_depth = 1`—it makes a single orthogonal cut on one feature (e.g., `tenure <= 12`). Individually, a stump is a simple step function.
-However, AdaBoost takes a **weighted linear combination of 50 step functions across different features**:
-$$F(x) = \sum_{m=1}^{50} \alpha_m h_m(x)$$
-Summing multiple orthogonal step functions produces a multidimensional piecewise-constant decision surface that cleanly bounds non-linear risk regions."
-</details>
-
----
-
-### 🔹 Q27: How does XGBoost utilize second-order Taylor expansion compared to standard Gradient Boosting?
-- **Difficulty:** `Advanced`
-- **Topic:** `XGBoost Optimization Math`
-- **Why Interviewers Ask This:** Deep dive into XGBoost internals.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"Standard Gradient Boosting uses first-order Taylor expansion (gradient descent in function space). XGBoost expands the objective function to second order:
-$$\mathcal{L}^{(t)} \approx \sum_{i=1}^N \left[ l(y_i, \hat{y}_i^{(t-1)}) + g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \Omega(f_t)$$
-where $g_i$ is the first derivative (gradient) and $h_i$ is the second derivative (Hessian). By incorporating curvature ($h_i$), XGBoost calculates optimal leaf weights analytically:
-$$w_j^* = -\frac{\sum g_i}{\sum h_i + \lambda}$$
-This converges much faster and eliminates the need for expensive step-size line searches."
-</details>
-
----
-
-### 🔹 Q28: How does LightGBM achieve faster training speeds than XGBoost?
-- **Difficulty:** `Advanced`
-- **Topic:** `LightGBM Innovations`
-- **Why Interviewers Ask This:** Checks knowledge of modern histogram-based boosting.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"LightGBM introduces three key innovations:
-1. **Histogram-Based Binning:** Continuous features are discretized into 256 integer bins, reducing split-finding complexity from $O(\#\text{samples} \times \#\text{features})$ to $O(\#\text{bins} \times \#\text{features})$.
-2. **GOSS (Gradient-based One-Side Sampling):** Retains all samples with large gradients (high error) and randomly samples from samples with small gradients, preserving gradient estimation while cutting data volume.
-3. **EFB (Exclusive Feature Bundling):** Bundles mutually exclusive sparse features into dense composite features."
-</details>
-
----
-
-### 🔹 Q29: What makes CatBoost particularly well-suited for tabular telecom datasets?
-- **Difficulty:** `Advanced`
-- **Topic:** `CatBoost Categorical Processing`
-- **Why Interviewers Ask This:** Evaluates state-of-the-art categorical handling.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"This dataset has 16 categorical columns. CatBoost uses **Ordered Target Statistics**—it calculates target encoding dynamically across random permutations of the dataset using only samples preceding the current one in time order. This eliminates target leakage that plagues traditional target encoding. Additionally, CatBoost builds **oblivious (symmetric) trees**, where the same split applies across an entire depth level, speeding up inference."
-</details>
-
----
-
-### 🔹 Q30: How does Optuna's Tree-structured Parzen Estimator (TPE) algorithm work?
-- **Difficulty:** `Advanced`
-- **Topic:** `Bayesian Hyperparameter Optimization`
-- **Why Interviewers Ask This:** Tests understanding of smart search vs. brute-force grid/random search.
-
-<details>
-<summary><b>💡 Reveal Comprehensive Answer</b></summary>
-
-#### Direct Verbal Answer
-"Unlike grid or random search, Optuna uses Bayesian optimization. TPE models the distribution of hyperparameters conditional on the score by splitting past trials into two density groups:
-- $\ell(x)$: Distribution of hyperparameters that produced top scores (e.g., top 20% F1).
-- $g(x)$: Distribution of hyperparameters from remaining trials.
-TPE selects new hyperparameter candidates that maximize the ratio $\frac{\ell(x)}{g(x)}$—sampling where successful trials cluster while avoiding unpromising areas."
-</details>
-
----
-
-### 🔹 Q31: What hyperparameters were optimized in your XGBoost Optuna study?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Hyperparameter Tuning Space`
-- **Why Interviewers Ask This:** Tests familiarity with tree booster hyperparameters.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"- `n_estimators`: Number of boosting trees (100–1000).
-- `max_depth`: Tree depth (3–10) controlling interaction complexity.
-- `learning_rate`: Shrinkage step size (0.01–0.3).
-- `subsample`: Fraction of rows sampled per tree to prevent overfitting.
-- `colsample_bytree`: Fraction of features sampled per tree.
-- `scale_pos_weight`: Multiplier on positive class loss to combat the 73:27 imbalance.
-- `reg_alpha` ($L_1$) and `reg_lambda` ($L_2$): Complexity penalties on leaf weights."
-</details>
-
----
-
-### 🔹 Q32: What is Early Stopping in boosting, and how does it prevent overfitting?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Regularization & Overfitting`
-- **Why Interviewers Ask This:** Checks practical training safeguards.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"As boosting iterations increase, training error continuously drops, but validation error eventually reaches a minimum and begins rising (overfitting). Early stopping monitors validation loss; if validation score fails to improve for $N$ consecutive rounds (e.g., `early_stopping_rounds=15`), training stops automatically and rolls back to the best checkpoint."
-</details>
-
----
-
-### 🔹 Q33: Why did Random Forest perform worse than AdaBoost on minority churn recall?
-- **Difficulty:** `Advanced`
-- **Topic:** `Bagging vs. Boosting Dynamics`
-- **Why Interviewers Ask This:** Tests understanding of bias vs. variance reduction under class imbalance.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"Random Forest uses bagging—each tree is trained independently on bootstrap samples. In an imbalanced dataset, individual bootstrap samples remain majority-dominated, and tree averaging pulls extreme probabilities toward the majority mean. AdaBoost uses boosting—each subsequent tree explicitly focuses on the misclassified minority churn instances from earlier iterations, aggressively driving up minority recall."
-</details>
-
----
-
-### 🔹 Q34: What is the "Multiple Comparisons Problem" when running 100 Optuna trials?
-- **Difficulty:** `Advanced`
-- **Topic:** `Statistical Search Bias`
-- **Why Interviewers Ask This:** Tests statistical skepticism of CV scores.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"Evaluating 100 hyperparameter combinations on the same 5-fold CV increases the probability that the 'best' score occurred due to random sampling luck on those specific folds rather than genuine parameter superiority. That's why the best configuration from Optuna must always be confirmed on a separate, untouched holdout test set."
-</details>
-
----
-
-## Part 4: Metrics, Thresholds & Explainability (Q35–Q42)
-
-### 🔹 Q35: Walk me through the Confusion Matrix for customer churn. What are the business costs of Type I vs. Type II errors?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Classification Metrics & Cost Asymmetry`
-- **Why Interviewers Ask This:** Tests connection between ML metrics and business P&L.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"- **True Positive (TP):** Customer predicted to churn, and actually churns $\to$ *Targeted with retention offer.*
-- **False Positive (FP - Type I):** Predicted to churn, but stays $\to$ *Cost: A wasted $15 retention discount offered to a loyal customer.*
-- **False Negative (FN - Type II):** Predicted to stay, but cancels $\to$ *Cost: Complete loss of hundreds of dollars in recurring subscription revenue (CLV).*
-- **True Negative (TN):** Predicted to stay, and stays $\to$ *Cost: $0.*
-Because False Negatives are far more expensive than False Positives in telecom, we optimize for **Recall** on the churn class."
-</details>
-
----
-
-### 🔹 Q36: Why is the Precision-Recall Curve (PR-AUC) superior to the ROC Curve for this project?
-- **Difficulty:** `Advanced`
-- **Topic:** `PR-AUC vs. ROC-AUC`
-- **Why Interviewers Ask This:** Classic senior ML interview question on imbalanced metrics.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"- **ROC Curve:** Plots $\text{TPR}$ vs. $\text{FPR} = \frac{\text{FP}}{\text{FP} + \text{TN}}$. Because the negative class ($\text{TN}$) is large (73.4%), the denominator is inflated, keeping $\text{FPR}$ artificially low even if false positives spike. ROC curves can look deceptively good on imbalanced datasets.
-- **PR Curve:** Plots $\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}$ vs. $\text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}$. It ignores $\text{TN}$ completely and evaluates how effectively the model retrieves the minority positive class without overwhelming users with false alarms."
-</details>
-
----
-
-### 🔹 Q37: How do you mathematically find the optimal classification threshold under asymmetric business costs?
-- **Difficulty:** `Advanced`
-- **Topic:** `Threshold Optimization`
-- **Why Interviewers Ask This:** Tests ability to optimize decisions using dollars rather than default 0.5.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"The default 0.5 threshold assumes equal error costs ($C_{\text{FP}} = C_{\text{FN}}$).
-Let $C_{\text{FP}}$ be the cost of a wasted offer (\$15) and $C_{\text{FN}}$ be the loss of a churned customer (\$150).
-The expected cost of predicting churn is $(1-p) C_{\text{FP}}$, and the expected cost of predicting stay is $p C_{\text{FN}}$.
-Setting them equal yields the optimal threshold:
-$$p^* = \frac{C_{\text{FP}}}{C_{\text{FN}} + C_{\text{FP}}} = \frac{15}{150 + 15} = \frac{15}{165} \approx 0.091$$
-Any subscriber with predicted churn probability $> 9.1\%$ should receive a retention intervention to maximize total business profit."
-</details>
-
----
-
-### 🔹 Q38: What are SHAP values, and why are they preferred over standard tree feature importance?
-- **Difficulty:** `Advanced`
-- **Topic:** `Explainable AI (SHAP)`
-- **Why Interviewers Ask This:** Tests understanding of model interpretability.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"- **Tree Impurity / Gini Importance:** Only provides global rankings, biases toward high-cardinality features, and doesn't reveal directionality (whether a feature increases or decreases churn).
-- **SHAP (Shapley Additive exPlanations):** Grounded in cooperative game theory. It computes the marginal contribution of each feature across all possible feature subsets:
-  1. **Directionality:** Shows whether a specific feature value increased or decreased churn risk.
-  2. **Local Interpretability:** Explains individual customer predictions for frontline retention agents.
-  3. **Axiomatic Consistency:** Mathematically satisfies efficiency, symmetry, and additivity."
-</details>
-
----
-
-### 🔹 Q39: What were the top global churn drivers identified by the model?
-- **Difficulty:** `Beginner`
-- **Topic:** `Model Insights`
-- **Why Interviewers Ask This:** Checks if you understood the actual model outputs.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"1. **Contract Type:** Month-to-month contracts had the strongest positive contribution to churn probability.
-2. **Tenure Cohort:** Tenure $\le 12$ months was the highest risk lifecycle window.
-3. **Internet Configuration:** Fiber optic plans without bundled Tech Support or Online Security.
-4. **Payment Method:** Electronic check payments.
-5. **Monthly Charges:** High monthly charges without multi-year contract discounts."
-</details>
-
----
-
-### 🔹 Q40: What is Probability Calibration, and why are boosted tree probabilities often uncalibrated?
-- **Difficulty:** `Advanced`
-- **Topic:** `Calibration & Platt Scaling`
-- **Why Interviewers Ask This:** Tests deep probabilistic understanding.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"A model is calibrated if a predicted probability of 0.80 means that 80 out of 100 customers actually churn.
-Boosting algorithms greedily push predictions toward extreme margins, often outputting probabilities clustered near 0 and 1 (overconfident). We diagnose this using a **Reliability Diagram / Calibration Curve** and fix it by fitting **Platt Scaling** (logistic sigmoid) or **Isotonic Regression** on held-out validation predictions."
-</details>
-
----
-
-### 🔹 Q41: Why can't leadership simply eliminate month-to-month contracts to stop churn? (Correlation vs. Causation)
-- **Difficulty:** `Critical Thinking`
-- **Topic:** `Causal Inference`
-- **Why Interviewers Ask This:** Tests ability to distinguish statistical correlation from causal policy levers.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"This is a correlation vs. causation trap. Less-committed or financially volatile subscribers naturally select month-to-month contracts; the contract is a **symptom** of low commitment, not the sole cause. Forcibly eliminating month-to-month contracts would increase acquisition friction and drive prospects to competitors. Any policy change must be evaluated via controlled A/B experiments offering incentives to switch."
-</details>
-
----
-
-### 🔹 Q42: What is Uplift Modeling, and why is it superior to standard churn prediction for campaign ROI?
-- **Difficulty:** `Critical Thinking`
-- **Topic:** `Causal ML & Uplift Modeling`
-- **Why Interviewers Ask This:** Tests advanced awareness of marketing optimization.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"Standard churn models predict $P(\text{Churn} \mid X)$ and target the highest-risk customers. This wastes money on **Lost Causes** (customers who will leave regardless) and risks disturbing **Sleeping Dogs** (customers who only cancel because an email reminded them).
-**Uplift Modeling** predicts the **Individual Treatment Effect (ITE)**:
-$$\tau(X) = P(\text{Churn} \mid X, T=0) - P(\text{Churn} \mid X, T=1)$$
-It directs retention discounts strictly to **Persuadables**—customers who only stay if they receive an offer—maximizing marketing ROI."
-</details>
-
----
-
-## Part 5: Production Engineering, Deployment & MLOps (Q43–Q50)
-
-### 🔹 Q43: What is Training-Serving Skew, and where was the subtle bug in the project's original preprocessor?
-- **Difficulty:** `Critical Thinking`
-- **Topic:** `Training-Serving Skew`
-- **Why Interviewers Ask This:** Real-world production gotcha question.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"Training-serving skew occurs when live inference transformations differ from training transformations.
-In early iterations, `build_preprocessor()` fit a new `StandardScaler` on the entire CSV at app startup. However, the deployed model was trained on a scaler fit only on `x_train`. These two scalers have slightly different means and variances, silently biasing every live prediction without throwing an error.
-**The Fix:** Fit the preprocessor (`StandardScaler`, `template_columns`, `bins`) once during offline training, serialize it via `joblib.dump()`, and load it read-only in production."
-</details>
-
----
-
-### 🔹 Q44: How does `@st.cache_resource` differ from `@st.cache_data` in Streamlit?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Streamlit Architecture & Caching`
-- **Why Interviewers Ask This:** Checks understanding of web serving lifecycles.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"- `@st.cache_data`: Caches serializable data (DataFrames, arrays). It clones cached outputs on retrieval, ideal for data ingestion (`load_data`).
-- `@st.cache_resource`: Caches global singleton objects (ML models, database connections, scalers). It does not serialize or copy; it maintains a single shared instance in server memory across all concurrent browser sessions (`load_model`)."
-</details>
-
----
-
-### 🔹 Q45: Why is running a Docker container as `root` a security risk, and how did you resolve it?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Docker Security & CIS Benchmarks`
-- **Why Interviewers Ask This:** Evaluates container security hygiene.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"By default, Docker runs containers as `root` (UID 0). If an attacker exploits a remote code execution vulnerability in a dependency (e.g., pickle deserialization), they obtain root privileges inside the container, facilitating kernel breakout to the host.
-In our `Dockerfile`, I created a dedicated unprivileged user:
-```dockerfile
-RUN groupadd -g 10001 appgroup && \
-    useradd -u 10001 -g appgroup -s /bin/bash -m appuser
-WORKDIR /app
-COPY --chown=appuser:appgroup . .
-USER appuser
-```
-This satisfies the principle of least privilege."
-</details>
-
----
-
-### 🔹 Q46: How does Docker layer caching work, and how did you optimize your `Dockerfile` for it?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Docker Build Optimization`
-- **Why Interviewers Ask This:** Tests container build efficiency.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"Docker caches intermediate build layers. If an instruction and its files are unchanged, Docker reuses the cached layer.
-- ❌ **Slow Pattern:** `COPY . .` followed by `pip install`. Any documentation or code edit invalidates the pip install cache, forcing a 2-minute dependency re-installation.
-- ✅ **Optimized Pattern:**
-  ```dockerfile
-  COPY requirements.txt .
-  RUN pip install --no-cache-dir -r requirements.txt
-  COPY --chown=appuser:appgroup . .
-  ```
-  Dependency installation is only re-run when `requirements.txt` actually changes, reducing rebuild time to 2 seconds."
-</details>
-
----
-
-### 🔹 Q47: What is a container health check, and why is it important for AWS deployments?
-- **Difficulty:** `Intermediate`
-- **Topic:** `Container Liveness Probes`
-- **Why Interviewers Ask This:** Checks cloud orchestration knowledge.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"A health check provides a deterministic command for orchestrators (AWS ECS, Kubernetes) to verify application responsiveness:
-```dockerfile
-HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD curl --fail http://localhost:8501/_stcore/health || exit 1
-```
-If the Python process deadlocks or runs out of memory, the health check fails, prompting the AWS Application Load Balancer to redirect traffic and restart the container."
-</details>
-
----
-
-### 🔹 Q48: How do you detect Data Drift and Concept Drift in production when ground truth labels are delayed?
-- **Difficulty:** `Critical Thinking`
-- **Topic:** `Model Monitoring & Drift Detection`
-- **Why Interviewers Ask This:** Tests post-deployment MLOps observability.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"In telecom churn, ground truth takes 30–90 days to realize (label delay), so accuracy cannot be computed in real time. We rely on leading indicators:
-1. **Data Drift (Covariate Shift):** $P(X)$ changes. We calculate the **Population Stability Index (PSI)** and **Wasserstein Distance** on incoming feature payloads vs. baseline training distributions. A $\text{PSI} > 0.25$ triggers retrain alerts.
-2. **Prediction Drift:** Monitor the distribution of predicted probabilities. If mean churn probability shifts by 20%, an upstream data or market shift has occurred."
-</details>
-
----
-
-### 🔹 Q49: If retention teams successfully prevent churn for high-risk accounts, how do you prevent future training data contamination?
-- **Difficulty:** `Critical Thinking`
-- **Topic:** `Feedback Loops & Universal Control Groups`
-- **Why Interviewers Ask This:** Advanced senior MLOps challenge question.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"When a high-risk customer receives a discount and stays, their record is labeled `Churn = 0`. Future retraining sees a high-risk profile labeled as a non-churner, causing the model to unlearn churn signals (feedback loop contamination).
-**The Solution:** Establish a **Universal Control Group (Holdout of 5%–10%)**. High-risk subscribers in this group receive no retention offer. This provides two benefits:
-1. Untainted ground-truth data for future model retraining.
-2. A true control baseline to measure the causal dollar ROI of the retention campaign."
-</details>
-
----
-
-### 🔹 Q50: How would you scale this application from a Streamlit prototype to a high-throughput enterprise microservice?
-- **Difficulty:** `Critical Thinking`
-- **Topic:** `System Design & Architectural Evolution`
-- **Why Interviewers Ask This:** Tests enterprise system design capabilities.
-
-<details>
-<summary><b>💡 View Detailed Answer & Interview Tips</b></summary>
-
-#### Direct Verbal Answer
-"1. **Decouple UI and Inference:** Replace Streamlit with a dedicated **FastAPI or Triton Inference Server** exposing a `/v1/predict` gRPC/REST endpoint.
-2. **Vectorized Engine:** Export the scikit-learn model to **ONNX Runtime**, providing multi-threaded C++ inference with sub-millisecond latency.
-3. **Pydantic Validation:** Enforce strict request schemas and boundary validation at the API gateway.
-4. **Batch Processing Cluster:** For weekly scoring of 50 million subscribers, deploy a **PySpark or Ray** distributed batch job reading from a data warehouse (Snowflake/BigQuery) and publishing risk scores to CRM databases (Salesforce)."
-</details>
-
----
-
-*Curated for the Telecom Customer Churn Prediction Machine Learning Project.*
+*Curated for the Telecom Customer Churn Prediction project · numbers verified 28 Oct 2026 · answers are written to be spoken, not memorised.*
